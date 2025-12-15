@@ -33,6 +33,7 @@ export default function AdminPage() {
     year: '',
     description: '',
   })
+  const [imageFile, setImageFile] = useState<File | null>(null)
 
   const disabled = useMemo(
     () =>
@@ -78,12 +79,115 @@ export default function AdminPage() {
     return url.substring(idx + marker.length)
   }
 
+  const getPublicUrlFromPath = (path: string) => {
+    const { data } = supabase.storage.from('case-images').getPublicUrl(path)
+    return data.publicUrl
+  }
+
+  const compressImage = async (file: File, maxHeight = 1280, maxWidth = 720, targetSize = 250 * 1024) => {
+    const toDataURL = (f: File) =>
+      new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(String(reader.result))
+        reader.onerror = reject
+        reader.readAsDataURL(f)
+      })
+    const src = await toDataURL(file)
+    const img = new Image()
+    await new Promise<void>((res, rej) => {
+      img.onload = () => res()
+      img.onerror = rej
+      img.src = src
+    })
+    const targetAspect = 9 / 16
+    const srcAspect = img.width / img.height
+    let targetH = Math.min(img.height, maxHeight)
+    let targetW = Math.floor(targetH * targetAspect)
+    if (targetW > maxWidth) {
+      targetW = maxWidth
+      targetH = Math.floor(maxWidth * (16 / 9))
+    }
+    let cropW: number
+    let cropH: number
+    let sx: number
+    let sy: number
+    if (srcAspect > targetAspect) {
+      cropH = img.height
+      cropW = Math.floor(cropH * targetAspect)
+      sx = Math.floor((img.width - cropW) / 2)
+      sy = 0
+    } else {
+      cropW = img.width
+      cropH = Math.floor(cropW / targetAspect)
+      sx = 0
+      sy = Math.floor((img.height - cropH) / 2)
+    }
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')!
+    let currentW = targetW
+    let currentH = targetH
+    canvas.width = currentW
+    canvas.height = currentH
+    ctx.drawImage(img, sx, sy, cropW, cropH, 0, 0, currentW, currentH)
+    let quality = 0.82
+    let blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/jpeg', quality)
+    )
+    let iterations = 0
+    while (blob && blob.size > targetSize && iterations < 20) {
+      if (quality > 0.4) {
+        quality -= 0.08
+      } else {
+        currentW = Math.max(120, Math.floor(currentW * 0.9))
+        currentH = Math.max(213, Math.floor(currentH * 0.9))
+        canvas.width = currentW
+        canvas.height = currentH
+        ctx.drawImage(img, sx, sy, cropW, cropH, 0, 0, currentW, currentH)
+      }
+      blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, 'image/jpeg', quality)
+      )
+      iterations += 1
+    }
+    if (!blob) throw new Error('Image compression failed')
+    if (blob.size > targetSize) throw new Error('Image exceeds target size after compression')
+    const safeName = `case-${Date.now()}-${Math.random().toString(36).slice(2)}.jpg`
+    return new File([blob], safeName, { type: 'image/jpeg' })
+  }
+
+  const uploadImage = async (file: File) => {
+    const optimized = await compressImage(file)
+    const path = `uploads/${optimized.name}`
+    const { error } = await supabase.storage.from('case-images').upload(path, optimized, {
+      cacheControl: '3600',
+      upsert: false,
+    })
+    if (error) throw error
+    return getPublicUrlFromPath(path)
+  }
+
+  const deleteOldImageIfNeeded = async (url?: string) => {
+    if (!url) return
+    const path = extractStoragePathFromUrl(url)
+    if (!path) return
+    await supabase.storage.from('case-images').remove([path])
+  }
+
   const addCase = async () => {
     if (disabled) return
     setErrorMsg(null)
     setSuccessMsg(null)
     setSubmitLoading(true)
-    const imageUrl = newCase.image?.trim() || ''
+    let imageUrl = newCase.image?.trim() || ''
+    if (imageFile) {
+      try {
+        imageUrl = await uploadImage(imageFile)
+      } catch (err) {
+        console.error('Supabase upload error:', err)
+        setErrorMsg(t.admin.upload_failed)
+        imageUrl = ''
+      }
+    }
     const payload: Omit<Case, 'id'> = {
       title: newCase.title,
       description: newCase.description,
@@ -109,6 +213,7 @@ export default function AdminPage() {
       year: '',
       description: '',
     })
+    setImageFile(null)
     setSuccessMsg(t.admin.add_success)
     setSubmitLoading(false)
   }
@@ -124,6 +229,7 @@ export default function AdminPage() {
       year: String(c.year ?? ''),
       description: c.description || '',
     })
+    setImageFile(null)
   }
 
   const handleUpdate = async () => {
@@ -131,7 +237,18 @@ export default function AdminPage() {
     setErrorMsg(null)
     setSuccessMsg(null)
     setSubmitLoading(true)
-    const imageUrl = newCase.image?.trim() || ''
+    let imageUrl = newCase.image?.trim() || ''
+    if (imageFile) {
+      try {
+        const newUrl = await uploadImage(imageFile)
+        await deleteOldImageIfNeeded(newCase.image)
+        imageUrl = newUrl
+      } catch (err) {
+        console.error('Supabase upload error:', err)
+        setErrorMsg(t.admin.upload_failed)
+        imageUrl = newCase.image || ''
+      }
+    }
     const payload: Partial<Case> = {
       title: newCase.title,
       description: newCase.description,
@@ -153,6 +270,7 @@ export default function AdminPage() {
       year: '',
       description: '',
     })
+    setImageFile(null)
     setSubmitLoading(false)
   }
 
@@ -242,13 +360,15 @@ export default function AdminPage() {
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <div>
-              <p className="text-xs text-gray-400 mb-1">URL Обложки (Вручную)</p>
+              <p className="text-xs text-gray-400 mb-1">{t.admin.field_image_file}</p>
               <input
-                type="text"
-                value={newCase.image}
-                onChange={(e) => setNewCase({ ...newCase, image: e.target.value })}
-                placeholder="https://..."
-                className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const f = e.target.files?.[0] || null
+                  setImageFile(f)
+                }}
+                className="w-full rounded-md bg-brand-dark text-white file:text-white file:bg-brand-dark file:border file:border-white/10 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
               />
             </div>
             <input
