@@ -10,6 +10,7 @@ export default function AdminPage() {
   const [password, setPassword] = useState('')
   const [cases, setCases] = useState<Case[]>([])
   const [loading, setLoading] = useState(false)
+  const [editingId, setEditingId] = useState<string | number | null>(null)
 
   type NewCaseForm = {
     title: string
@@ -29,17 +30,18 @@ export default function AdminPage() {
     year: '',
     description: '',
   })
+  const [imageFile, setImageFile] = useState<File | null>(null)
 
   const disabled = useMemo(
     () =>
       !newCase.title ||
-      !newCase.image ||
+      (!newCase.image && !imageFile) ||
       !newCase.videoId ||
       !newCase.rating ||
       !newCase.year ||
       !newCase.description ||
       !newCase.category,
-    [newCase]
+    [newCase, imageFile]
   )
 
   const handleLogin = () => {
@@ -66,12 +68,46 @@ export default function AdminPage() {
     fetchCases()
   }, [])
 
+  const getPublicUrlFromPath = (path: string) => {
+    const { data } = supabase.storage.from('case-images').getPublicUrl(path)
+    return data.publicUrl
+  }
+
+  const extractStoragePathFromUrl = (url: string) => {
+    const marker = '/object/public/case-images/'
+    const idx = url.indexOf(marker)
+    if (idx === -1) return null
+    return url.substring(idx + marker.length)
+  }
+
+  const uploadImage = async (file: File) => {
+    const safeName = file.name.replace(/\s+/g, '-').toLowerCase()
+    const path = `uploads/${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}`
+    const { error } = await supabase.storage.from('case-images').upload(path, file, {
+      cacheControl: '3600',
+      upsert: false,
+    })
+    if (error) throw error
+    return getPublicUrlFromPath(path)
+  }
+
+  const deleteOldImageIfNeeded = async (url?: string) => {
+    if (!url) return
+    const path = extractStoragePathFromUrl(url)
+    if (!path) return
+    await supabase.storage.from('case-images').remove([path])
+  }
+
   const addCase = async () => {
     if (disabled) return
+    let imageUrl = newCase.image
+    if (imageFile) {
+      imageUrl = await uploadImage(imageFile)
+    }
     const payload: Omit<Case, 'id'> = {
       title: newCase.title,
       description: newCase.description,
-      image: newCase.image,
+      image: imageUrl,
       category: newCase.category?.trim() || 'General',
       rating: parseFloat(newCase.rating),
       year: parseInt(newCase.year, 10),
@@ -88,6 +124,52 @@ export default function AdminPage() {
       year: '',
       description: '',
     })
+    setImageFile(null)
+  }
+
+  const handleEdit = (c: Case) => {
+    setEditingId(c.id)
+    setNewCase({
+      title: c.title,
+      category: c.category || '',
+      image: c.image || '',
+      videoId: c.videoId || '',
+      rating: String(c.rating ?? ''),
+      year: String(c.year ?? ''),
+      description: c.description || '',
+    })
+    setImageFile(null)
+  }
+
+  const handleUpdate = async () => {
+    if (!editingId) return
+    let imageUrl = newCase.image
+    if (imageFile) {
+      await deleteOldImageIfNeeded(newCase.image)
+      imageUrl = await uploadImage(imageFile)
+    }
+    const payload: Partial<Case> = {
+      title: newCase.title,
+      description: newCase.description,
+      image: imageUrl,
+      category: newCase.category?.trim() || 'General',
+      rating: parseFloat(newCase.rating),
+      year: parseInt(newCase.year, 10),
+      videoId: newCase.videoId,
+    }
+    await supabase.from('cases').update(payload).match({ id: Number(editingId) })
+    await fetchCases()
+    setEditingId(null)
+    setNewCase({
+      title: '',
+      category: '',
+      image: '',
+      videoId: '',
+      rating: '',
+      year: '',
+      description: '',
+    })
+    setImageFile(null)
   }
 
   const deleteCase = async (id: string | number) => {
@@ -150,12 +232,20 @@ export default function AdminPage() {
               placeholder={t.admin.field_category_placeholder}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
-            <input
-              value={newCase.image}
-              onChange={(e) => setNewCase({ ...newCase, image: e.target.value })}
-              placeholder={t.admin.field_image_url}
-              className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
-            />
+            <div>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  const f = e.target.files?.[0] || null
+                  setImageFile(f)
+                }}
+                className="w-full rounded-md bg-brand-dark text-white file:text-white file:bg-brand-dark file:border file:border-white/10 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+              />
+              {newCase.image && !imageFile && (
+                <p className="mt-1 text-xs text-gray-400">Текущее изображение сохранено</p>
+              )}
+            </div>
             <input
               value={newCase.videoId}
               onChange={(e) => setNewCase({ ...newCase, videoId: e.target.value })}
@@ -186,13 +276,23 @@ export default function AdminPage() {
               rows={4}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
-            <button
-              disabled={disabled}
-              onClick={addCase}
-              className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {t.admin.add_case_cta}
-            </button>
+            {editingId ? (
+              <button
+                disabled={disabled}
+                onClick={handleUpdate}
+                className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                ОБНОВИТЬ ДЕЛО
+              </button>
+            ) : (
+              <button
+                disabled={disabled}
+                onClick={addCase}
+                className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {t.admin.add_case_cta}
+              </button>
+            )}
           </div>
         </section>
 
@@ -216,13 +316,22 @@ export default function AdminPage() {
                     <p className="text-xs text-gray-400">{c.category} • {c.rating}</p>
                   </div>
                 </div>
-                <button
-                  onClick={() => deleteCase(c.id)}
-                  className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-red text-white hover:bg-brand-red/90 transition"
-                  title={t.common.delete}
-                >
-                  <Trash className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleEdit(c)}
+                    className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-dark text-white border border-white/10 hover:bg-brand-dark/80 transition"
+                    title="Редактировать"
+                  >
+                    Редактировать
+                  </button>
+                  <button
+                    onClick={() => deleteCase(c.id)}
+                    className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-red text-white hover:bg-brand-red/90 transition"
+                    title={t.common.delete}
+                  >
+                    <Trash className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
