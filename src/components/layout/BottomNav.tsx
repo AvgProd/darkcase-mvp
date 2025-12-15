@@ -9,7 +9,7 @@ export default function BottomNav() {
   const labelBase = 'text-xs'
 
   return (
-    <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] rounded-2xl bg-[#141414]/90 backdrop-blur-md border border-white/10 shadow-2xl shadow-black/50">
+    <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] rounded-2xl bg-[#141414]/90 backdrop-blur-md border border-white/10 shadow-2xl shadow-black/50 z-50">
       <div className="flex justify-around items-center py-3">
         <NavLink
           to="/"
