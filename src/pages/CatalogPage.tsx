@@ -12,13 +12,18 @@ export default function CatalogPage() {
       key={key}
       onClick={() => setActiveTab(key)}
       className={
-        'inline-flex items-center px-3 py-2 text-sm font-medium transition-colors border-b-2 ' +
-        (activeTab === key
-          ? 'text-emerald-400 border-emerald-400'
-          : 'text-gray-400 border-transparent hover:text-white')
+        'inline-flex items-center px-3 py-2 text-sm font-medium transition-colors ' +
+        (activeTab === key ? 'text-brand-red' : 'text-gray-400 hover:text-white')
       }
     >
-      {label}
+      <span
+        className={
+          'inline-block w-fit leading-none ' +
+          (activeTab === key ? 'border-b-2 border-brand-red pb-0.5' : '')
+        }
+      >
+        {label}
+      </span>
     </button>
   )
 
