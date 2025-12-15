@@ -48,3 +48,4 @@ jobs:
             export PORT=3000
             pm2 start /usr/bin/node server.js --name "dakcase-app"
             pm2 save
+            date | tee "$HOME/deploy_last_run.txt"
