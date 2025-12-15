@@ -232,9 +232,32 @@ export default function AdminPage() {
     setImageFile(null)
   }
 
-  const deleteCase = async (id: string | number) => {
-    await supabase.from('cases').delete().eq('id', Number(id))
-    await fetchCases()
+  const handleDeleteCase = async (caseId: string | number, imageUrl?: string | null) => {
+    const ok = window.confirm('Вы уверены, что хотите удалить это дело?')
+    if (!ok) return
+    setErrorMsg(null)
+    setSuccessMsg(null)
+    try {
+      if (imageUrl) {
+        const path = extractStoragePathFromUrl(imageUrl)
+        if (path) {
+          const { error: storageError } = await supabase.storage.from('case-images').remove([path])
+          if (storageError) {
+            console.error('Storage delete error:', storageError)
+          }
+        }
+      }
+      const { error: dbError } = await supabase.from('cases').delete().eq('id', Number(caseId))
+      if (dbError) {
+        setErrorMsg('Ошибка при удалении дела.')
+        return
+      }
+      setSuccessMsg('Дело успешно удалено.')
+      await fetchCases()
+    } catch (e) {
+      console.error('Delete case error:', e)
+      setErrorMsg('Не удалось удалить дело. Попробуйте снова.')
+    }
   }
 
   if (!authenticated) {
@@ -429,7 +452,7 @@ export default function AdminPage() {
                     Редактировать
                   </button>
                   <button
-                    onClick={() => deleteCase(c.id)}
+                    onClick={() => handleDeleteCase(c.id, c.image)}
                     className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-red text-white hover:bg-brand-red/90 transition"
                     title={t.common.delete}
                   >
