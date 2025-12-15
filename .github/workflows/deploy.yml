@@ -1,0 +1,52 @@
+name: Deploy to VDS via SSH
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VDS_HOST }}
+          username: ${{ secrets.VDS_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.VDS_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -e
+            if ! command -v node >/dev/null 2>&1; then
+              curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+              sudo apt install -y nodejs
+            fi
+            if ! command -v pm2 >/dev/null 2>&1; then
+              sudo npm install -g pm2
+            fi
+            sudo apt update
+            sudo apt install -y authbind git
+            sudo touch /etc/authbind/byport/80
+            sudo chown $USER /etc/authbind/byport/80
+            sudo chmod 770 /etc/authbind/byport/80
+
+            if [ -d "$HOME/darkcase-mvp" ]; then
+              cd "$HOME/darkcase-mvp"
+              git pull
+            else
+              cd "$HOME"
+              git clone https://github.com/AvgProd/darkcase-mvp.git
+              cd darkcase-mvp
+            fi
+
+            npm install
+            npm run build
+
+            pm2 stop dakcase-app || true
+            authbind --deep pm2 start /usr/bin/node server.js --name "dakcase-app"
+            pm2 save
