@@ -1,0 +1,27 @@
+name: Verify SSH access to VDS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run SSH check
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VDS_HOST }}
+          username: ${{ secrets.VDS_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.VDS_PORT || 22 }}
+          script_stop: true
+          script: |
+            echo "SSH connected"
+            whoami
+            hostname
+            uname -a
+            date
+            echo "IP addresses:"
+            ip -o -4 addr show | awk '{print $2,$4}'
+            echo "PM2 status:"
+            pm2 status || echo "PM2 not installed"
