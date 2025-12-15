@@ -13,6 +13,7 @@ export default function AdminPage() {
   const [editingId, setEditingId] = useState<string | number | null>(null)
   const [submitLoading, setSubmitLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+  const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
   type NewCaseForm = {
     title: string
@@ -37,13 +38,12 @@ export default function AdminPage() {
   const disabled = useMemo(
     () =>
       !newCase.title ||
-      (!newCase.image && !imageFile) ||
       !newCase.videoId ||
       !newCase.rating ||
       !newCase.year ||
       !newCase.description ||
       !newCase.category,
-    [newCase, imageFile]
+    [newCase]
   )
 
   const handleLogin = () => {
@@ -144,6 +144,7 @@ export default function AdminPage() {
   const addCase = async () => {
     if (disabled) return
     setErrorMsg(null)
+    setSuccessMsg(null)
     setSubmitLoading(true)
     let imageUrl = newCase.image
     if (imageFile) {
@@ -152,14 +153,14 @@ export default function AdminPage() {
       } catch (err) {
         console.error('Supabase upload error:', err)
         setSubmitLoading(false)
-        setErrorMsg("Не удалось загрузить изображение. Проверьте, что в Supabase Storage (bucket 'case-images') разрешен INSERT (RLS Policy).")
+        setErrorMsg('Не удалось загрузить изображение. Попробуйте снова.')
         return
       }
     }
     const payload: Omit<Case, 'id'> = {
       title: newCase.title,
       description: newCase.description,
-      image: imageUrl,
+      image: imageUrl || '',
       category: newCase.category?.trim() || 'General',
       rating: parseFloat(newCase.rating),
       year: parseInt(newCase.year, 10),
@@ -168,7 +169,7 @@ export default function AdminPage() {
     const { error } = await supabase.from('cases').insert([payload])
     if (error) {
       setSubmitLoading(false)
-      setErrorMsg('Ошибка при сохранении записи.')
+      setErrorMsg('Ошибка при сохранении дела.')
       return
     }
     await fetchCases()
@@ -182,6 +183,7 @@ export default function AdminPage() {
       description: '',
     })
     setImageFile(null)
+    setSuccessMsg('Дело успешно добавлено.')
     setSubmitLoading(false)
   }
 
@@ -278,6 +280,7 @@ export default function AdminPage() {
           <h3 className="text-lg font-semibold">{t.admin.add_case}</h3>
           <div className="mt-4 space-y-3">
             {errorMsg && <p className="text-sm text-red-400">{errorMsg}</p>}
+            {successMsg && <p className="text-sm text-green-400">{successMsg}</p>}
             <input
               value={newCase.title}
               onChange={(e) => setNewCase({ ...newCase, title: e.target.value })}
