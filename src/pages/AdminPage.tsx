@@ -110,7 +110,7 @@ export default function AdminPage() {
         imageUrl = await uploadImage(imageFile)
       } catch (err) {
         setSubmitLoading(false)
-        setErrorMsg('Не удалось загрузить изображение. Попробуйте снова.')
+        setErrorMsg("Не удалось загрузить изображение. Проверьте, что в Supabase Storage (bucket 'case-images') разрешен INSERT (RLS Policy).")
         return
       }
     }
