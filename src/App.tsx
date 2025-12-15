@@ -9,25 +9,18 @@ import CasePage from './pages/CasePage'
 
 export default function App() {
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      type TelegramWebApp = {
-        ready: () => void
-        expand: () => void
-        setHeaderColor: (color: string) => void
-        setBackgroundColor: (color: string) => void
-        isVersionAtLeast?: (v: string) => boolean
-        disableVerticalSwipes?: () => void
-      }
-      const w = window as unknown as { Telegram?: { WebApp?: TelegramWebApp } }
-      const tg = w.Telegram?.WebApp
-      if (tg) {
-        tg.ready()
-        tg.expand()
-        tg.setHeaderColor('#000000')
-        tg.setBackgroundColor('#000000')
-        if (typeof tg.isVersionAtLeast === 'function' && tg.isVersionAtLeast('7.7')) {
-          tg.disableVerticalSwipes()
+    const tg = (window as any).Telegram?.WebApp
+    if (tg) {
+      tg.ready?.()
+      tg.expand?.()
+      try {
+        tg.setHeaderColor?.('#000000')
+        tg.setBackgroundColor?.('#000000')
+        if (tg.isVersionAtLeast?.('7.7')) {
+          tg.disableVerticalSwipes?.()
         }
+      } catch {
+        console.log('Telegram styling not supported on this platform')
       }
     }
   }, [])
