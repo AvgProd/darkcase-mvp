@@ -7,9 +7,11 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start": "node server.js"
   },
   "dependencies": {
+    "express": "^4.21.2",
     "@supabase/supabase-js": "^2.87.1",
     "@twa-dev/sdk": "^8.0.2",
     "clsx": "^2.1.1",
