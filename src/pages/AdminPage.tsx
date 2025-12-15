@@ -28,7 +28,7 @@ export default function AdminPage() {
           <div className="mt-4">
             <input
               type="password"
-              value={password}
+              value={password ?? ''}
               onChange={(e) => setPassword(e.target.value)}
               placeholder={t.admin.enter_password}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
