@@ -82,10 +82,49 @@ export default function AdminPage() {
     return url.substring(idx + marker.length)
   }
 
+  const compressImage = async (file: File, maxWidth = 1280, targetSize = 250 * 1024) => {
+    const toDataURL = (f: File) =>
+      new Promise<string>((resolve, reject) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(String(reader.result))
+        reader.onerror = reject
+        reader.readAsDataURL(f)
+      })
+    const src = await toDataURL(file)
+    const img = new Image()
+    await new Promise<void>((res, rej) => {
+      img.onload = () => res()
+      img.onerror = rej
+      img.src = src
+    })
+    const scale = img.width > maxWidth ? maxWidth / img.width : 1
+    const w = Math.max(1, Math.floor(img.width * scale))
+    const h = Math.max(1, Math.floor(img.height * scale))
+    const canvas = document.createElement('canvas')
+    canvas.width = w
+    canvas.height = h
+    const ctx = canvas.getContext('2d')!
+    ctx.drawImage(img, 0, 0, w, h)
+    let quality = 0.8
+    let blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, 'image/jpeg', quality)
+    )
+    while (blob && blob.size > targetSize && quality > 0.4) {
+      quality -= 0.1
+      blob = await new Promise<Blob | null>((resolve) =>
+        canvas.toBlob(resolve, 'image/jpeg', quality)
+      )
+    }
+    if (!blob) throw new Error('Image compression failed')
+    const name = file.name.replace(/\s+/g, '-').toLowerCase().replace(/\.[^.]+$/, '') + '.jpg'
+    return new File([blob], name, { type: 'image/jpeg' })
+  }
+
   const uploadImage = async (file: File) => {
-    const safeName = file.name.replace(/\s+/g, '-').toLowerCase()
+    const optimized = await compressImage(file)
+    const safeName = optimized.name.replace(/\s+/g, '-').toLowerCase()
     const path = `uploads/${Date.now()}-${Math.random().toString(36).slice(2)}-${safeName}`
-    const { error } = await supabase.storage.from('case-images').upload(path, file, {
+    const { error } = await supabase.storage.from('case-images').upload(path, optimized, {
       cacheControl: '3600',
       upsert: false,
     })
@@ -109,6 +148,7 @@ export default function AdminPage() {
       try {
         imageUrl = await uploadImage(imageFile)
       } catch (err) {
+        console.error('Supabase upload error:', err)
         setSubmitLoading(false)
         setErrorMsg("Не удалось загрузить изображение. Проверьте, что в Supabase Storage (bucket 'case-images') разрешен INSERT (RLS Policy).")
         return
@@ -299,7 +339,17 @@ export default function AdminPage() {
                 onClick={handleUpdate}
                 className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                ОБНОВИТЬ ДЕЛО
+                {submitLoading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 004 12z" />
+                    </svg>
+                    Загрузка...
+                  </span>
+                ) : (
+                  'ОБНОВИТЬ ДЕЛО'
+                )}
               </button>
             ) : (
               <button
@@ -307,7 +357,17 @@ export default function AdminPage() {
                 onClick={addCase}
                 className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {t.admin.add_case_cta}
+                {submitLoading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 004 12z" />
+                    </svg>
+                    Загрузка...
+                  </span>
+                ) : (
+                  t.admin.add_case_cta
+                )}
               </button>
             )}
           </div>
