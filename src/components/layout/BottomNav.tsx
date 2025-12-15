@@ -20,8 +20,13 @@ export default function BottomNav() {
             clsx(itemBase, isActive ? 'text-brand-red' : 'text-gray-500')
           }
         >
-          <Home className={iconBase} />
-          <span className={labelBase}>{t.nav.home}</span>
+          {({ isActive }: { isActive?: boolean }) => (
+            <>
+              <Home className={iconBase} />
+              <span className={labelBase}>{t.nav.home}</span>
+              {isActive ? <div className="mt-1 h-1 w-5 rounded-full bg-brand-red" /> : null}
+            </>
+          )}
         </NavLink>
         <NavLink
           to="/shorts"
@@ -29,8 +34,13 @@ export default function BottomNav() {
             clsx(itemBase, isActive ? 'text-brand-red' : 'text-gray-500')
           }
         >
-          <Film className={iconBase} />
-          <span className={labelBase}>{t.nav.shorts}</span>
+          {({ isActive }: { isActive?: boolean }) => (
+            <>
+              <Film className={iconBase} />
+              <span className={labelBase}>{t.nav.shorts}</span>
+              {isActive ? <div className="mt-1 h-1 w-5 rounded-full bg-brand-red" /> : null}
+            </>
+          )}
         </NavLink>
         <NavLink
           to="/catalog"
@@ -38,8 +48,13 @@ export default function BottomNav() {
             clsx(itemBase, isActive ? 'text-brand-red' : 'text-gray-500')
           }
         >
-          <Search className={iconBase} />
-          <span className={labelBase}>{t.nav.catalog}</span>
+          {({ isActive }: { isActive?: boolean }) => (
+            <>
+              <Search className={iconBase} />
+              <span className={labelBase}>{t.nav.catalog}</span>
+              {isActive ? <div className="mt-1 h-1 w-5 rounded-full bg-brand-red" /> : null}
+            </>
+          )}
         </NavLink>
         <NavLink
           to="/my"
@@ -47,8 +62,13 @@ export default function BottomNav() {
             clsx(itemBase, isActive ? 'text-brand-red' : 'text-gray-500')
           }
         >
-          <Bookmark className={iconBase} />
-          <span className={labelBase}>{t.nav.my}</span>
+          {({ isActive }: { isActive?: boolean }) => (
+            <>
+              <Bookmark className={iconBase} />
+              <span className={labelBase}>{t.nav.my}</span>
+              {isActive ? <div className="mt-1 h-1 w-5 rounded-full bg-brand-red" /> : null}
+            </>
+          )}
         </NavLink>
         <NavLink
           to="/profile"
@@ -56,8 +76,13 @@ export default function BottomNav() {
             clsx(itemBase, isActive ? 'text-brand-red' : 'text-gray-500')
           }
         >
-          <User className={iconBase} />
-          <span className={labelBase}>{t.nav.profile}</span>
+          {({ isActive }: { isActive?: boolean }) => (
+            <>
+              <User className={iconBase} />
+              <span className={labelBase}>{t.nav.profile}</span>
+              {isActive ? <div className="mt-1 h-1 w-5 rounded-full bg-brand-red" /> : null}
+            </>
+          )}
         </NavLink>
       </div>
     </nav>

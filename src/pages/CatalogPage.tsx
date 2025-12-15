@@ -11,10 +11,10 @@ export default function CatalogPage() {
       key={key}
       onClick={() => setActiveTab(key)}
       className={
-        'px-4 py-2 rounded-full text-sm border ' +
+        'inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-colors border shadow-sm ' +
         (activeTab === key
-          ? 'bg-brand-red text-white border-brand-red'
-          : 'bg-brand-dark text-gray-300 border-white/10 hover:bg-brand-dark/80')
+          ? 'bg-brand-red text-white border-brand-red shadow-black/40'
+          : 'bg-[#1a1a1a] text-gray-300 border-white/10 hover:bg-[#222] hover:text-white')
       }
     >
       {label}
@@ -26,10 +26,10 @@ export default function CatalogPage() {
       key={key}
       onClick={() => setActiveFilter(activeFilter === key ? null : key)}
       className={
-        'px-3 py-1 rounded-full text-xs border ' +
+        'inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium transition-colors border ' +
         (activeFilter === key
-          ? 'bg-white text-black border-white'
-          : 'bg-brand-dark text-gray-200 border-white/10 hover:bg-brand-dark/80')
+          ? 'bg-white text-black border-white ring-1 ring-white/60'
+          : 'bg-[#121212] text-gray-200 border-white/10 hover:bg-[#1a1a1a]')
       }
     >
       {label}
@@ -42,8 +42,8 @@ export default function CatalogPage() {
         <h1 className="text-xl font-bold">{t.nav.catalog}</h1>
       </header>
 
-      <section className="px-4 md:px-8 mt-4">
-        <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
+      <section className="mt-4">
+        <div className="-mx-4 px-4 md:px-8 flex items-center gap-3 overflow-x-scroll whitespace-nowrap scrollbar-hide">
           {tabBtn('movies', 'Фильмы')}
           {tabBtn('series', 'Сериалы')}
           {tabBtn('kids', 'Детям')}
@@ -51,8 +51,8 @@ export default function CatalogPage() {
         </div>
       </section>
 
-      <section className="px-4 md:px-8 mt-4">
-        <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+      <section className="mt-4">
+        <div className="-mx-4 px-4 md:px-8 flex items-center gap-2 overflow-x-scroll whitespace-nowrap scrollbar-hide">
           {chipBtn('newest', 'По новизне')}
           {chipBtn('genre', 'Жанр')}
           {chipBtn('rating', 'Рейтинг')}
@@ -61,10 +61,20 @@ export default function CatalogPage() {
       </section>
 
       <main className="px-4 md:px-8 mt-6">
-        <div className="rounded-xl bg-brand-dark/60 border border-white/10 p-6">
-          <p className="text-sm text-gray-400">
-            Визуальные табы и фильтры подготовлены. Логика выбора категорий и фильтрации будет добавлена на следующем шаге.
-          </p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+          {[...Array(10)].map((_, i) => (
+            <div
+              key={i}
+              className="aspect-[9/16] rounded-xl overflow-hidden bg-gradient-to-b from-[#1f1f1f] to-[#0e0e0e] border border-white/10"
+            >
+              <div className="h-full w-full flex items-end">
+                <div className="w-full p-2">
+                  <div className="h-2 w-3/5 bg-white/20 rounded-full mb-1" />
+                  <div className="h-2 w-2/5 bg-white/10 rounded-full" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </main>
     </div>
