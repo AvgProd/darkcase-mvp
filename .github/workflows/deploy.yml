@@ -31,6 +31,7 @@ jobs:
             fi
             sudo apt update
             sudo apt install -y git
+            sudo pm2 startup systemd -u $USER --hp $HOME || true
 
             if [ -d "$HOME/darkcase-mvp" ]; then
               cd "$HOME/darkcase-mvp"
@@ -54,6 +55,6 @@ EOF
 
             pm2 stop dakcase-app || true
             export PORT=3000
-            pm2 start /usr/bin/node server.js --name "dakcase-app"
+            pm2 start /usr/bin/node server.js --name "dakcase-app" --restart-delay 5000 --time
             pm2 save
             date | tee "$HOME/deploy_last_run.txt"
