@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useT } from '../hooks/useTranslation'
+import { Search as SearchIcon } from 'lucide-react'
 
 export default function CatalogPage() {
   const t = useT()
@@ -39,11 +40,22 @@ export default function CatalogPage() {
   return (
     <div className="min-h-screen w-full bg-brand-black text-white pb-24">
       <header className="sticky top-0 z-20 bg-brand-black/80 backdrop-blur px-4 py-3 border-b border-white/10">
-        <h1 className="text-xl font-bold">{t.nav.catalog}</h1>
+        <div className="max-w-[560px] mx-auto">
+          <h1 className="text-xl font-bold">{t.nav.catalog}</h1>
+          <div className="mt-3 relative">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              type="text"
+              placeholder={t.catalog?.search_placeholder ?? 'Фильмы и сериалы'}
+              className="w-full h-10 rounded-xl bg-white/10 text-white placeholder:text-gray-400 border border-white/10 pl-9 focus:outline-none focus:ring-2 focus:ring-brand-red/50"
+              readOnly
+            />
+          </div>
+        </div>
       </header>
 
-      <section className="mt-4">
-        <div className="-mx-4 px-4 md:px-8 flex items-center gap-3 overflow-x-scroll whitespace-nowrap scrollbar-hide">
+      <section className="mt-4 px-4 md:px-8">
+        <div className="max-w-[560px] mx-auto flex items-center gap-3 overflow-x-scroll whitespace-nowrap scrollbar-hide">
           {tabBtn('movies', 'Фильмы')}
           {tabBtn('series', 'Сериалы')}
           {tabBtn('kids', 'Детям')}
@@ -51,8 +63,8 @@ export default function CatalogPage() {
         </div>
       </section>
 
-      <section className="mt-4">
-        <div className="-mx-4 px-4 md:px-8 flex items-center gap-2 overflow-x-scroll whitespace-nowrap scrollbar-hide">
+      <section className="mt-4 px-4 md:px-8">
+        <div className="max-w-[560px] mx-auto flex items-center gap-2 overflow-x-scroll whitespace-nowrap scrollbar-hide">
           {chipBtn('newest', 'По новизне')}
           {chipBtn('genre', 'Жанр')}
           {chipBtn('rating', 'Рейтинг')}
@@ -61,7 +73,7 @@ export default function CatalogPage() {
       </section>
 
       <main className="px-4 md:px-8 mt-6">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
+        <div className="max-w-[560px] mx-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {[...Array(10)].map((_, i) => (
             <div
               key={i}

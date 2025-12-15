@@ -8,6 +8,9 @@ export const ru = {
     catalog: 'Каталог',
     my: 'Моё',
   },
+  catalog: {
+    search_placeholder: 'Фильмы и сериалы',
+  },
   common: {
     play_now: 'Смотреть сейчас',
     more_info: 'Подробнее',
