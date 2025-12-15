@@ -11,6 +11,8 @@ export default function AdminPage() {
   const [cases, setCases] = useState<Case[]>([])
   const [loading, setLoading] = useState(false)
   const [editingId, setEditingId] = useState<string | number | null>(null)
+  const [submitLoading, setSubmitLoading] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
 
   type NewCaseForm = {
     title: string
@@ -100,9 +102,17 @@ export default function AdminPage() {
 
   const addCase = async () => {
     if (disabled) return
+    setErrorMsg(null)
+    setSubmitLoading(true)
     let imageUrl = newCase.image
     if (imageFile) {
-      imageUrl = await uploadImage(imageFile)
+      try {
+        imageUrl = await uploadImage(imageFile)
+      } catch (err) {
+        setSubmitLoading(false)
+        setErrorMsg('Не удалось загрузить изображение. Попробуйте снова.')
+        return
+      }
     }
     const payload: Omit<Case, 'id'> = {
       title: newCase.title,
@@ -113,7 +123,12 @@ export default function AdminPage() {
       year: parseInt(newCase.year, 10),
       videoId: newCase.videoId,
     }
-    await supabase.from('cases').insert([payload])
+    const { error } = await supabase.from('cases').insert([payload])
+    if (error) {
+      setSubmitLoading(false)
+      setErrorMsg('Ошибка при сохранении записи.')
+      return
+    }
     await fetchCases()
     setNewCase({
       title: '',
@@ -125,6 +140,7 @@ export default function AdminPage() {
       description: '',
     })
     setImageFile(null)
+    setSubmitLoading(false)
   }
 
   const handleEdit = (c: Case) => {
@@ -219,6 +235,7 @@ export default function AdminPage() {
         <section className="rounded-xl bg-brand-dark/60 border border-white/10 p-4">
           <h3 className="text-lg font-semibold">{t.admin.add_case}</h3>
           <div className="mt-4 space-y-3">
+            {errorMsg && <p className="text-sm text-red-400">{errorMsg}</p>}
             <input
               value={newCase.title}
               onChange={(e) => setNewCase({ ...newCase, title: e.target.value })}
@@ -278,7 +295,7 @@ export default function AdminPage() {
             />
             {editingId ? (
               <button
-                disabled={disabled}
+                disabled={disabled || submitLoading}
                 onClick={handleUpdate}
                 className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -286,7 +303,7 @@ export default function AdminPage() {
               </button>
             ) : (
               <button
-                disabled={disabled}
+                disabled={disabled || submitLoading}
                 onClick={addCase}
                 className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
