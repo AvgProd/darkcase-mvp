@@ -59,7 +59,7 @@ export default function ShortsPlayer({ items }: Props) {
           onClick={goPrev}
           className="p-2 rounded-full bg-black/60 border border-white/10 hover:bg-black/80"
           disabled={index === 0}
-          title="Предыдущее"
+          title={t.common.prev}
         >
           <ChevronUp className="w-5 h-5 text-white" />
         </button>
@@ -67,7 +67,7 @@ export default function ShortsPlayer({ items }: Props) {
           onClick={goNext}
           className="p-2 rounded-full bg-black/60 border border-white/10 hover:bg-black/80"
           disabled={index === items.length - 1}
-          title="Следующее"
+          title={t.common.next}
         >
           <ChevronDown className="w-5 h-5 text-white" />
         </button>

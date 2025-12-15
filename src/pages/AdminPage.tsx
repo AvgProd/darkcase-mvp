@@ -169,7 +169,7 @@ export default function AdminPage() {
     const { error } = await supabase.from('cases').insert([payload])
     if (error) {
       setSubmitLoading(false)
-      setErrorMsg('Ошибка при сохранении дела.')
+      setErrorMsg(t.admin.save_error)
       return
     }
     await fetchCases()
@@ -183,7 +183,7 @@ export default function AdminPage() {
       description: '',
     })
     setImageFile(null)
-    setSuccessMsg('Дело успешно добавлено.')
+    setSuccessMsg(t.admin.add_success)
     setSubmitLoading(false)
   }
 
@@ -314,10 +314,11 @@ export default function AdminPage() {
               type="text"
               value={newCase.category}
               onChange={(e) => setNewCase({ ...newCase, category: e.target.value })}
-              placeholder={t.admin.field_category_placeholder}
+              placeholder={t.admin.field_category}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <div>
+              <p className="text-xs text-gray-400 mb-1">{t.admin.field_image_file}</p>
               <input
                 type="file"
                 accept="image/*"
@@ -327,9 +328,7 @@ export default function AdminPage() {
                 }}
                 className="w-full rounded-md bg-brand-dark text-white file:text-white file:bg-brand-dark file:border file:border-white/10 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
               />
-              {newCase.image && !imageFile && (
-                <p className="mt-1 text-xs text-gray-400">Текущее изображение сохранено</p>
-              )}
+              {newCase.image && !imageFile && <p className="mt-1 text-xs text-gray-400">{t.admin.field_image_file}</p>}
             </div>
             <input
               value={newCase.videoId}
@@ -343,7 +342,7 @@ export default function AdminPage() {
               type="number"
               step="0.1"
               inputMode="decimal"
-              placeholder={t.admin.field_rating_placeholder}
+              placeholder={t.admin.field_rating}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <input
@@ -351,7 +350,7 @@ export default function AdminPage() {
               onChange={(e) => setNewCase({ ...newCase, year: e.target.value })}
               type="number"
               inputMode="numeric"
-              placeholder={t.admin.field_year_placeholder}
+              placeholder={t.admin.field_year}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <textarea
@@ -374,10 +373,10 @@ export default function AdminPage() {
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 004 12z" />
                       </svg>
-                      Загрузка...
+                      {t.common.loading}
                     </span>
                   ) : (
-                    'ОБНОВИТЬ ДЕЛО'
+                    t.admin.update_case
                   )}
                 </button>
                 <button
@@ -398,7 +397,7 @@ export default function AdminPage() {
                   }}
                   className="mt-2 w-full rounded-md bg-brand-dark text-white font-semibold py-2 border border-white/10 hover:bg-brand-dark/80 transition"
                 >
-                  Отменить редактирование
+                  {t.admin.cancel_edit}
                 </button>
               </div>
             ) : (
@@ -413,7 +412,7 @@ export default function AdminPage() {
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 004 12z" />
                     </svg>
-                    Загрузка...
+                    {t.common.loading}
                   </span>
                 ) : (
                   t.admin.add_case_cta
@@ -447,17 +446,17 @@ export default function AdminPage() {
                   <button
                     onClick={() => handleEdit(c)}
                     className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-dark text-white border border-white/10 hover:bg-brand-dark/80 transition"
-                    title="Редактировать"
+                    title={t.common.edit}
                   >
-                    Редактировать
+                    {t.common.edit}
                   </button>
-                  <button
-                    onClick={() => handleDeleteCase(c.id, c.image)}
-                    className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-red text-white hover:bg-brand-red/90 transition"
-                    title={t.common.delete}
-                  >
-                    <Trash className="w-4 h-4" />
-                  </button>
+                <button
+                  onClick={() => handleDeleteCase(c.id, c.image)}
+                  className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-red text-white hover:bg-brand-red/90 transition"
+                  title={t.common.delete}
+                >
+                  <Trash className="w-4 h-4" />
+                </button>
                 </div>
               </div>
             ))}

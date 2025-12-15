@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react'
 import ShortsPlayer from '../components/ui/ShortsPlayer'
 import type { Case } from '../types/Case'
 import { supabase } from '../lib/supabase'
+import { useT } from '../hooks/useTranslation'
 
 export default function ShortsPage() {
   const [items, setItems] = useState<Case[]>([])
   const [loading, setLoading] = useState(true)
+  const t = useT()
 
   useEffect(() => {
     const fetchCases = async () => {
@@ -23,7 +25,7 @@ export default function ShortsPage() {
   if (loading) {
     return (
       <div className="h-screen w-full bg-black pb-20 flex items-center justify-center">
-        <p className="text-gray-400">Загрузка...</p>
+        <p className="text-gray-400">{t.common.loading}</p>
       </div>
     )
   }
