@@ -16,19 +16,26 @@ export default function NavigationTabs({
   ]
 
   return (
-    <div className="flex gap-6 px-4 pt-2">
+    <div className="flex gap-4 px-4 pt-2">
       {tabs.map((t) => {
         const isActive = t.key === active
         return (
           <button
             key={t.key}
             onClick={() => onChange(t.key)}
-            className={`text-base ${isActive ? 'text-white' : 'text-gray-400'}`}
+            className={
+              'inline-flex items-center px-3 py-2 text-sm font-medium transition-colors ' +
+              (isActive ? 'text-brand-red' : 'text-gray-400 hover:text-white')
+            }
           >
-            <div className="inline-flex flex-col">
-              <span className="inline-block">{t.label}</span>
-              <span className={`mt-2 h-1 rounded-full w-full ${isActive ? 'bg-green-500' : 'bg-transparent'}`} />
-            </div>
+            <span
+              className={
+                'inline-block w-fit leading-none ' +
+                (isActive ? 'border-b-2 border-brand-red pb-0.5' : '')
+              }
+            >
+              {t.label}
+            </span>
           </button>
         )
       })}
