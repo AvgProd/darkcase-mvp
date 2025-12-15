@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Heart, Share2, ChevronUp, ChevronDown } from 'lucide-react'
 import { useT } from '../../hooks/useTranslation'
 import type { Case } from '../../types/Case'
@@ -13,11 +13,19 @@ export default function ShortsPlayer({ items }: Props) {
   const [index, setIndex] = useState(0)
   const current = items[index]
 
+  useEffect(() => {
+    if (index > items.length - 1) {
+      setTimeout(() => {
+        setIndex(items.length > 0 ? items.length - 1 : 0)
+      }, 0)
+    }
+  }, [items.length, index])
+
   const goPrev = () => setIndex((i) => (i > 0 ? i - 1 : i))
   const goNext = () => setIndex((i) => (i < items.length - 1 ? i + 1 : i))
 
   return (
-    <div className="h-screen w-full relative bg-black pb-20">
+    <div className="h-screen w-full relative bg-black pb-20 overflow-hidden">
       <div className="absolute inset-0">
         {current && (
           <YouTube
@@ -25,13 +33,14 @@ export default function ShortsPlayer({ items }: Props) {
             opts={{
               width: '100%',
               height: '100%',
-              playerVars: {
-                autoplay: 1,
-                modestbranding: 1,
-                rel: 0,
-                controls: 0,
-                playsinline: 1,
-              },
+              playerVars:
+                {
+                  autoplay: 1,
+                  modestbranding: 1,
+                  rel: 0,
+                  controls: 0,
+                  playsinline: 1,
+                },
             }}
             className="w-full h-full pointer-events-none"
           />
@@ -40,7 +49,7 @@ export default function ShortsPlayer({ items }: Props) {
 
       <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
 
-      <div className="absolute bottom-6 left-4">
+      <div className="absolute bottom-6 left-4 right-20 pr-4">
         <h4 className="text-lg font-semibold">{current?.title || ''}</h4>
         <p className="text-sm text-gray-300">{t.shorts.author}</p>
       </div>
