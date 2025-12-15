@@ -8,7 +8,6 @@ export default function AdminPage() {
   const t = useT()
   const [authenticated, setAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
-  const [cases, setCases] = useState<Case[]>([])
   const [loading, setLoading] = useState(false)
   const [editingId, setEditingId] = useState<string | number | null>(null)
   const [submitLoading, setSubmitLoading] = useState(false)
@@ -66,6 +65,8 @@ export default function AdminPage() {
   })
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [videoFile, setVideoFile] = useState<File | null>(null)
+  const [catalogCases, setCatalogCases] = useState<Case[]>([])
+  const [shortCases, setShortCases] = useState<Case[]>([])
 
   const disabledCatalog = useMemo(
     () =>
@@ -80,8 +81,6 @@ export default function AdminPage() {
     () => !shortForm.title || (!videoFile && !shortForm.videoUrl),
     [shortForm.title, videoFile, shortForm.videoUrl]
   )
-  const regularCases = useMemo(() => cases.filter((c) => !c.is_short), [cases])
-  const shortsCases = useMemo(() => cases.filter((c) => !!c.is_short), [cases])
 
   const handleLogin = () => {
     if (password === 'admin123') {
@@ -99,7 +98,8 @@ export default function AdminPage() {
     const { data, error } = await supabase.from('cases').select('*')
     if (!error && data) {
       const list = data as Case[]
-      setCases(list)
+      setCatalogCases(list.filter((c) => !c.is_short))
+      setShortCases(list.filter((c) => !!c.is_short))
     }
     setLoading(false)
   }
@@ -669,7 +669,7 @@ export default function AdminPage() {
           <h3 className="text-lg font-semibold">{t.admin.manage_cases}</h3>
           <div className="mt-4 space-y-3">
             {loading && <p className="text-sm text-gray-400">{t.common.loading}</p>}
-            {!loading && regularCases.map((c) => (
+            {!loading && catalogCases.map((c) => (
               <div
                 key={c.id}
                 className="flex items-center justify-between gap-3 rounded-md bg-brand-dark px-3 py-2 border border-white/10"
@@ -692,7 +692,7 @@ export default function AdminPage() {
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleEdit(c)}
-                    className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-dark text-white border border-white/10 hover:bg-brand-dark/80 transition"
+                    className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-dark text白 text-white border border-white/10 hover:bg-brand-dark/80 transition"
                     title={t.common.edit}
                   >
                     {t.common.edit}
@@ -812,7 +812,7 @@ export default function AdminPage() {
           <h3 className="text-lg font-semibold">Список Shorts</h3>
           <div className="mt-4 space-y-3">
             {loading && <p className="text-sm text-gray-400">{t.common.loading}</p>}
-            {!loading && shortsCases.map((c) => (
+            {!loading && shortCases.map((c) => (
               <div
                 key={c.id}
                 className="flex items-center justify-between gap-3 rounded-md bg-brand-dark px-3 py-2 border border-white/10"
@@ -821,7 +821,7 @@ export default function AdminPage() {
                           {c.image ? (
                             <img src={c.image ?? undefined} alt={c.title} className="w-12 h-16 object-cover rounded" />
                           ) : (
-                            <div className="w-12 h-16 rounded bg-gradient-to-b from-[#1f1f1f] to-[#0e0e0e] border border-white/10" />
+                            <div className="w-12 h-16 rounded bg-gradient-to-b from-[#1f1f1f] to-[#0e0e0e] border border白/10 border-white/10" />
                           )}
                   <div>
                     <p className="text-sm font-medium">{c.title}</p>
