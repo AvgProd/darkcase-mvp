@@ -57,7 +57,7 @@ export default function CasePage() {
         {!isPlaying ? (
           <div className="relative w-full aspect-video bg-black">
             <img
-              src={item.image}
+              src={item.image ?? undefined}
               alt={item.title}
               className="absolute inset-0 w-full h-full object-cover"
             />
@@ -76,7 +76,7 @@ export default function CasePage() {
           <div className="w-full">
             {item.is_short && item.video_url ? (
               <video
-                src={item.video_url}
+                src={item.video_url ?? undefined}
                 className="w-full h-[250px] object-contain bg-black"
                 autoPlay
                 controls

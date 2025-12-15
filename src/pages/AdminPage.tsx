@@ -268,12 +268,12 @@ export default function AdminPage() {
         const payload: Omit<Case, 'id'> = {
           title: newCase.title,
           description: newCase.description,
-          image: imageUrl || '',
+          image: imageUrl || null,
           category: newCase.category?.trim() || 'General',
           rating: parseFloat(newCase.rating),
           year: parseInt(newCase.year, 10),
           is_short: false,
-          video_url: '',
+          video_url: null,
           short_description: null,
         }
         const { error } = await supabase.from('cases').insert([payload])
@@ -339,7 +339,7 @@ export default function AdminPage() {
         imageUrl = newCase.image || ''
       }
     }
-    let videoUrl = newCase.videoUrl?.trim() || ''
+    let videoUrl: string | null = newCase.videoUrl?.trim() || null
     if (newCase.isShort && videoFile) {
       try {
         const newVideoUrl = await uploadVideo(videoFile)
@@ -351,7 +351,7 @@ export default function AdminPage() {
       } catch (err) {
         console.error('Supabase upload error (video):', err)
         setErrorMsg('Не удалось загрузить видео файл')
-        videoUrl = ''
+        videoUrl = null
       }
     }
     const payload: Partial<Case> = {
@@ -362,7 +362,7 @@ export default function AdminPage() {
       rating: newCase.isShort ? 0 : parseFloat(newCase.rating),
       year: newCase.isShort ? new Date().getFullYear() : parseInt(newCase.year, 10),
       is_short: newCase.isShort,
-      video_url: newCase.isShort ? (videoUrl || null) : '',
+      video_url: newCase.isShort ? (videoUrl || null) : null,
       short_description: newCase.isShort ? (newCase.shortDescription || null) : null,
     }
     await supabase.from('cases').update(payload).match({ id: Number(editingId) })
@@ -605,11 +605,15 @@ export default function AdminPage() {
                 className="flex items-center justify-between gap-3 rounded-md bg-brand-dark px-3 py-2 border border-white/10"
               >
                 <div className="flex items-center gap-3">
-                  <img
-                    src={c.image}
-                    alt={c.title}
-                    className="w-12 h-16 object-cover rounded"
-                  />
+                  {c.image ? (
+                    <img
+                      src={c.image ?? undefined}
+                      alt={c.title}
+                      className="w-12 h-16 object-cover rounded"
+                    />
+                  ) : (
+                    <div className="w-12 h-16 rounded bg-gradient-to-b from-[#1f1f1f] to-[#0e0e0e] border border-white/10" />
+                  )}
                   <div>
                     <p className="text-sm font-medium">{c.title}</p>
                     <p className="text-xs text-gray-400">{c.category} • {c.rating}</p>
@@ -744,11 +748,11 @@ export default function AdminPage() {
                 className="flex items-center justify-between gap-3 rounded-md bg-brand-dark px-3 py-2 border border-white/10"
               >
                 <div className="flex items-center gap-3">
-                  {c.image ? (
-                    <img src={c.image} alt={c.title} className="w-12 h-16 object-cover rounded" />
-                  ) : (
-                    <div className="w-12 h-16 rounded bg-gradient-to-b from-[#1f1f1f] to-[#0e0e0e] border border-white/10" />
-                  )}
+                          {c.image ? (
+                            <img src={c.image ?? undefined} alt={c.title} className="w-12 h-16 object-cover rounded" />
+                          ) : (
+                            <div className="w-12 h-16 rounded bg-gradient-to-b from-[#1f1f1f] to-[#0e0e0e] border border-white/10" />
+                          )}
                   <div>
                     <p className="text-sm font-medium">{c.title}</p>
                     <p className="text-xs text-gray-400">Short • {c.year}</p>

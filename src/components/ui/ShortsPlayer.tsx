@@ -40,7 +40,7 @@ export default function ShortsPlayer({ items }: Props) {
       <div className="absolute inset-0">
         {current && (
           <video
-            src={current.video_url}
+            src={current.video_url ?? undefined}
             className="w-full h-full object-cover"
             autoPlay
             muted

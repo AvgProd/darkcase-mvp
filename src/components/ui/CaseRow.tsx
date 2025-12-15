@@ -20,7 +20,7 @@ export default function CaseRow({ title, cases }: Props) {
               className="group relative flex-shrink-0 w-32 md:w-40 rounded-lg overflow-hidden bg-brand-dark"
             >
               <img
-                src={c.image}
+                src={c.image ?? undefined}
                 alt={c.title}
                 className="w-full h-48 md:h-56 object-cover"
               />

@@ -15,7 +15,7 @@ export default function HeroSection({ featuredCase }: Props) {
     <section className="relative w-full h-[70vh] bg-black">
       <Link to={`/case/${featuredCase.id}`}>
         <img
-          src={featuredCase.image}
+          src={featuredCase.image ?? undefined}
           alt={featuredCase.title}
           className="absolute inset-0 w-full h-full object-cover opacity-90"
         />
