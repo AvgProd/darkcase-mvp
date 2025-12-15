@@ -16,6 +16,19 @@ export default function AdminPage() {
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'catalog' | 'shorts'>('catalog')
 
+  type CatalogForm = {
+    title: string
+    category: string
+    image: string
+    rating: string
+    year: string
+    description: string
+  }
+  type ShortForm = {
+    title: string
+    videoUrl: string
+    shortDescription: string
+  }
   type NewCaseForm = {
     title: string
     category: string
@@ -27,6 +40,19 @@ export default function AdminPage() {
     videoUrl: string
     shortDescription: string
   }
+  const [catalogForm, setCatalogForm] = useState<CatalogForm>({
+    title: '',
+    category: '',
+    image: '',
+    rating: '',
+    year: '',
+    description: '',
+  })
+  const [shortForm, setShortForm] = useState<ShortForm>({
+    title: '',
+    videoUrl: '',
+    shortDescription: '',
+  })
   const [newCase, setNewCase] = useState<NewCaseForm>({
     title: '',
     category: '',
@@ -41,18 +67,18 @@ export default function AdminPage() {
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [videoFile, setVideoFile] = useState<File | null>(null)
 
-  const disabled = useMemo(
+  const disabledCatalog = useMemo(
     () =>
-      !newCase.title ||
-      !newCase.rating ||
-      !newCase.year ||
-      !newCase.description ||
-      !newCase.category,
-    [newCase]
+      !catalogForm.title ||
+      !catalogForm.rating ||
+      !catalogForm.year ||
+      !catalogForm.description ||
+      !catalogForm.category,
+    [catalogForm]
   )
   const disabledShort = useMemo(
-    () => !newCase.title || (!videoFile && !newCase.videoUrl),
-    [newCase.title, videoFile, newCase.videoUrl]
+    () => !shortForm.title || (!videoFile && !shortForm.videoUrl),
+    [shortForm.title, videoFile, shortForm.videoUrl]
   )
   const regularCases = useMemo(() => cases.filter((c) => !c.is_short), [cases])
   const shortsCases = useMemo(() => cases.filter((c) => !!c.is_short), [cases])
@@ -72,7 +98,8 @@ export default function AdminPage() {
     setLoading(true)
     const { data, error } = await supabase.from('cases').select('*')
     if (!error && data) {
-      setCases(data as Case[])
+      const list = data as Case[]
+      setCases(list)
     }
     setLoading(false)
   }
@@ -207,102 +234,94 @@ export default function AdminPage() {
   }
 
   const addCase = async () => {
-    if (!newCase.isShort && disabled) return
+    if (disabledCatalog) return
     setErrorMsg(null)
     setSuccessMsg(null)
     setSubmitLoading(true)
     try {
-      if (newCase.isShort) {
-        let videoUrl: string | null = newCase.videoUrl?.trim() || null
-        if (videoFile) {
-          try {
-            videoUrl = await uploadVideo(videoFile)
-          } catch (err) {
-            console.error('Supabase upload error (video):', err)
-            setErrorMsg('Не удалось загрузить видео файл')
-            videoUrl = null
-          }
+      let imageUrl = catalogForm.image?.trim() || ''
+      if (imageFile) {
+        try {
+          imageUrl = await uploadImage(imageFile)
+        } catch (err) {
+          console.error('Supabase upload error:', err)
+          setErrorMsg(t.admin.upload_failed)
+          imageUrl = ''
         }
-        const payload: Omit<Case, 'id'> = {
-          title: newCase.title,
-          description: newCase.shortDescription || '',
-          image: '',
-          category: 'Shorts',
-          rating: 0,
-          year: new Date().getFullYear(),
-          is_short: true,
-          video_url: videoUrl,
-          short_description: newCase.shortDescription || null,
-        }
-        const { error } = await supabase.from('cases').insert([payload])
-        if (error) {
-          setErrorMsg(t.admin.save_error)
-        } else {
-          await fetchCases()
-          setNewCase({
-            title: '',
-            category: '',
-            image: '',
-            isShort: false,
-            videoUrl: '',
-            shortDescription: '',
-            rating: '',
-            year: '',
-            description: '',
-          })
-          setImageFile(null)
-          setVideoFile(null)
-          setSuccessMsg(t.admin.add_success)
-        }
+      }
+      const payload: Omit<Case, 'id'> = {
+        title: catalogForm.title,
+        description: catalogForm.description,
+        image: imageUrl || null,
+        category: catalogForm.category?.trim() || 'General',
+        rating: parseFloat(catalogForm.rating),
+        year: parseInt(catalogForm.year, 10),
+        is_short: false,
+        video_url: null,
+        short_description: null,
+      }
+      const { error } = await supabase.from('cases').insert([payload])
+      if (error) {
+        setErrorMsg(t.admin.save_error)
       } else {
-        let imageUrl = newCase.image?.trim() || ''
-        if (imageFile) {
-          try {
-            imageUrl = await uploadImage(imageFile)
-          } catch (err) {
-            console.error('Supabase upload error:', err)
-            setErrorMsg(t.admin.upload_failed)
-            imageUrl = ''
-          }
-        }
-        const payload: Omit<Case, 'id'> = {
-          title: newCase.title,
-          description: newCase.description,
-          image: imageUrl || null,
-          category: newCase.category?.trim() || 'General',
-          rating: parseFloat(newCase.rating),
-          year: parseInt(newCase.year, 10),
-          is_short: false,
-          video_url: null,
-          short_description: null,
-        }
-        const { error } = await supabase.from('cases').insert([payload])
-        if (error) {
-          setErrorMsg(t.admin.save_error)
-        } else {
-          await fetchCases()
-          setNewCase({
-            title: '',
-            category: '',
-            image: '',
-            isShort: false,
-            videoUrl: '',
-            shortDescription: '',
-            rating: '',
-            year: '',
-            description: '',
-          })
-          setImageFile(null)
-          setSuccessMsg(t.admin.add_success)
-        }
+        await fetchCases()
+        setCatalogForm({
+          title: '',
+          category: '',
+          image: '',
+          rating: '',
+          year: '',
+          description: '',
+        })
+        setImageFile(null)
+        setSuccessMsg(t.admin.add_success)
       }
     } finally {
       setSubmitLoading(false)
     }
   }
   const addShort = async () => {
-    setNewCase((prev) => ({ ...prev, isShort: true }))
-    await addCase()
+    setErrorMsg(null)
+    setSuccessMsg(null)
+    setSubmitLoading(true)
+    try {
+      let videoUrl: string | null = shortForm.videoUrl?.trim() || null
+      if (videoFile) {
+        try {
+          videoUrl = await uploadVideo(videoFile)
+        } catch (err) {
+          console.error('Supabase upload error (video):', err)
+          setErrorMsg('Не удалось загрузить видео файл')
+          videoUrl = null
+        }
+      }
+      const payload: Omit<Case, 'id'> = {
+        title: shortForm.title,
+        description: shortForm.shortDescription || '',
+        image: null,
+        category: 'Shorts',
+        rating: 0,
+        year: new Date().getFullYear(),
+        is_short: true,
+        video_url: videoUrl,
+        short_description: shortForm.shortDescription || null,
+      }
+      const { error } = await supabase.from('cases').insert([payload])
+      if (error) {
+        setErrorMsg(t.admin.save_error)
+      } else {
+        await fetchCases()
+        setShortForm({
+          title: '',
+          videoUrl: '',
+          shortDescription: '',
+        })
+        setVideoFile(null)
+        setSuccessMsg(t.admin.add_success)
+      }
+    } finally {
+      setSubmitLoading(false)
+    }
   }
 
   const handleEdit = (c: Case) => {
@@ -482,19 +501,39 @@ export default function AdminPage() {
           <div className="mt-4 space-y-3">
             {errorMsg && <p className="text-sm text-red-400">{errorMsg}</p>}
             {successMsg && <p className="text-sm text-green-400">{successMsg}</p>}
-            <input
-              value={newCase.title}
-              onChange={(e) => setNewCase({ ...newCase, title: e.target.value })}
-              placeholder={t.admin.field_title}
-              className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
-            />
-            <input
-              type="text"
-              value={newCase.category}
-              onChange={(e) => setNewCase({ ...newCase, category: e.target.value })}
-              placeholder={t.admin.field_category}
-              className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
-            />
+            {!editingId ? (
+              <>
+                <input
+                  value={catalogForm.title}
+                  onChange={(e) => setCatalogForm({ ...catalogForm, title: e.target.value })}
+                  placeholder={t.admin.field_title}
+                  className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+                />
+                <input
+                  type="text"
+                  value={catalogForm.category}
+                  onChange={(e) => setCatalogForm({ ...catalogForm, category: e.target.value })}
+                  placeholder={t.admin.field_category}
+                  className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+                />
+              </>
+            ) : (
+              <>
+                <input
+                  value={newCase.title}
+                  onChange={(e) => setNewCase({ ...newCase, title: e.target.value })}
+                  placeholder={t.admin.field_title}
+                  className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+                />
+                <input
+                  type="text"
+                  value={newCase.category}
+                  onChange={(e) => setNewCase({ ...newCase, category: e.target.value })}
+                  placeholder={t.admin.field_category}
+                  className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+                />
+              </>
+            )}
             <div>
               <p className="text-xs text-gray-400 mb-1">{t.admin.field_image_file}</p>
               <input
@@ -508,34 +547,65 @@ export default function AdminPage() {
               />
             </div>
             
-            <input
-              value={newCase.rating}
-              onChange={(e) => setNewCase({ ...newCase, rating: e.target.value })}
-              type="number"
-              step="0.1"
-              inputMode="decimal"
-              placeholder={t.admin.field_rating}
-              className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
-            />
-            <input
-              value={newCase.year}
-              onChange={(e) => setNewCase({ ...newCase, year: e.target.value })}
-              type="number"
-              inputMode="numeric"
-              placeholder={t.admin.field_year}
-              className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
-            />
-            <textarea
-              value={newCase.description}
-              onChange={(e) => setNewCase({ ...newCase, description: e.target.value })}
-              placeholder={t.admin.field_description}
-              rows={4}
-              className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
-            />
+            {!editingId ? (
+              <>
+                <input
+                  value={catalogForm.rating}
+                  onChange={(e) => setCatalogForm({ ...catalogForm, rating: e.target.value })}
+                  type="number"
+                  step="0.1"
+                  inputMode="decimal"
+                  placeholder={t.admin.field_rating}
+                  className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+                />
+                <input
+                  value={catalogForm.year}
+                  onChange={(e) => setCatalogForm({ ...catalogForm, year: e.target.value })}
+                  type="number"
+                  inputMode="numeric"
+                  placeholder={t.admin.field_year}
+                  className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+                />
+                <textarea
+                  value={catalogForm.description}
+                  onChange={(e) => setCatalogForm({ ...catalogForm, description: e.target.value })}
+                  placeholder={t.admin.field_description}
+                  rows={4}
+                  className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+                />
+              </>
+            ) : (
+              <>
+                <input
+                  value={newCase.rating}
+                  onChange={(e) => setNewCase({ ...newCase, rating: e.target.value })}
+                  type="number"
+                  step="0.1"
+                  inputMode="decimal"
+                  placeholder={t.admin.field_rating}
+                  className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+                />
+                <input
+                  value={newCase.year}
+                  onChange={(e) => setNewCase({ ...newCase, year: e.target.value })}
+                  type="number"
+                  inputMode="numeric"
+                  placeholder={t.admin.field_year}
+                  className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+                />
+                <textarea
+                  value={newCase.description}
+                  onChange={(e) => setNewCase({ ...newCase, description: e.target.value })}
+                  placeholder={t.admin.field_description}
+                  rows={4}
+                  className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+                />
+              </>
+            )}
             {editingId ? (
               <div>
                 <button
-                  disabled={disabled || submitLoading}
+                  disabled={disabledCatalog || submitLoading}
                   onClick={handleUpdate}
                   className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -575,7 +645,7 @@ export default function AdminPage() {
               </div>
             ) : (
               <button
-                disabled={disabled || submitLoading}
+                disabled={disabledCatalog || submitLoading}
                 onClick={addCase}
                 className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -650,8 +720,8 @@ export default function AdminPage() {
             {errorMsg && <p className="text-sm text-red-400">{errorMsg}</p>}
             {successMsg && <p className="text-sm text-green-400">{successMsg}</p>}
             <input
-              value={newCase.title}
-              onChange={(e) => setNewCase({ ...newCase, title: e.target.value })}
+              value={shortForm.title}
+              onChange={(e) => setShortForm({ ...shortForm, title: e.target.value })}
               placeholder={t.admin.field_title}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
@@ -668,8 +738,8 @@ export default function AdminPage() {
               />
             </div>
             <textarea
-              value={newCase.shortDescription}
-              onChange={(e) => setNewCase({ ...newCase, shortDescription: e.target.value })}
+              value={shortForm.shortDescription}
+              onChange={(e) => setShortForm({ ...shortForm, shortDescription: e.target.value })}
               placeholder="Короткое описание"
               rows={3}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
