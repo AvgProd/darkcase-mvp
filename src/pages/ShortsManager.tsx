@@ -314,7 +314,7 @@ export default function ShortsManager() {
             >
               <div className="flex items-center gap-3">
                 {c.image ? (
-                  <img src={c.image ?? undefined} alt={c.title} className="w-12 h-16 object-cover rounded" />
+                  <img src={c.image || ''} alt={c.title} className="w-12 h-16 object-cover rounded" />
                 ) : (
                   <div className="w-12 h-16 rounded bg-gradient-to-b from-[#1f1f1f] to-[#0e0e0e] border border-white/10" />
                 )}

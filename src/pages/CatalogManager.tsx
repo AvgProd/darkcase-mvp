@@ -469,7 +469,7 @@ export default function CatalogManager() {
               <div className="flex items-center gap-3">
                 {c.image ? (
                   <img
-                    src={c.image ?? undefined}
+                    src={c.image || ''}
                     alt={c.title}
                     className="w-12 h-16 object-cover rounded"
                   />
