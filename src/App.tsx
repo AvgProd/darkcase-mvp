@@ -6,6 +6,7 @@ import ShortsPage from './pages/ShortsPage'
 import SearchPage from './pages/SearchPage'
 import ProfilePage from './pages/ProfilePage'
 import CasePage from './pages/CasePage'
+import AdminPage from './pages/AdminPage'
 
 export default function App() {
   useEffect(() => {
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="profile" element={<ProfilePage />} />
           <Route path="case/:id" element={<CasePage />} />
         </Route>
+        <Route path="/admin" element={<AdminPage />} />
       </Routes>
     </BrowserRouter>
   )
