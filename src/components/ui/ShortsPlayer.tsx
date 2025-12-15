@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react'
 import { Heart, Share2, ChevronUp, ChevronDown } from 'lucide-react'
 import { useT } from '../../hooks/useTranslation'
 import type { Case } from '../../types/Case'
-import YouTube from 'react-youtube'
 
 type Props = {
   items: Case[]
@@ -28,21 +27,14 @@ export default function ShortsPlayer({ items }: Props) {
     <div className="h-screen w-full relative bg-black pb-20 overflow-hidden">
       <div className="absolute inset-0">
         {current && (
-          <YouTube
-            videoId={current.videoId}
-            opts={{
-              width: '100%',
-              height: '100%',
-              playerVars:
-                {
-                  autoplay: 1,
-                  modestbranding: 1,
-                  rel: 0,
-                  controls: 0,
-                  playsinline: 1,
-                },
-            }}
-            className="w-full h-full pointer-events-none"
+          <video
+            src={current.video_url}
+            className="w-full h-full object-cover"
+            autoPlay
+            muted
+            loop
+            playsInline
+            controls={false}
           />
         )}
       </div>

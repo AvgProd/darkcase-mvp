@@ -19,26 +19,30 @@ export default function AdminPage() {
     title: string
     category: string
     image: string
-    videoId: string
     rating: string
     year: string
     description: string
+    isShort: boolean
+    videoUrl: string
+    shortDescription: string
   }
   const [newCase, setNewCase] = useState<NewCaseForm>({
     title: '',
     category: '',
     image: '',
-    videoId: '',
     rating: '',
     year: '',
     description: '',
+    isShort: false,
+    videoUrl: '',
+    shortDescription: '',
   })
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [videoFile, setVideoFile] = useState<File | null>(null)
 
   const disabled = useMemo(
     () =>
       !newCase.title ||
-      !newCase.videoId ||
       !newCase.rating ||
       !newCase.year ||
       !newCase.description ||
@@ -78,9 +82,19 @@ export default function AdminPage() {
     if (idx === -1) return null
     return url.substring(idx + marker.length)
   }
+  const extractVideoStoragePathFromUrl = (url: string) => {
+    const marker = '/object/public/short-videos/'
+    const idx = url.indexOf(marker)
+    if (idx === -1) return null
+    return url.substring(idx + marker.length)
+  }
 
   const getPublicUrlFromPath = (path: string) => {
     const { data } = supabase.storage.from('case-images').getPublicUrl(path)
+    return data.publicUrl
+  }
+  const getVideoPublicUrlFromPath = (path: string) => {
+    const { data } = supabase.storage.from('short-videos').getPublicUrl(path)
     return data.publicUrl
   }
 
@@ -165,6 +179,18 @@ export default function AdminPage() {
     if (error) throw error
     return getPublicUrlFromPath(path)
   }
+  const uploadVideo = async (file: File) => {
+    const ext = file.name.split('.').pop()?.toLowerCase() || 'mp4'
+    const safeName = `short-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+    const renamed = new File([file], safeName, { type: file.type || 'video/mp4' })
+    const path = `uploads/${renamed.name}`
+    const { error } = await supabase.storage.from('short-videos').upload(path, renamed, {
+      cacheControl: '3600',
+      upsert: false,
+    })
+    if (error) throw error
+    return getVideoPublicUrlFromPath(path)
+  }
 
   const deleteOldImageIfNeeded = async (url?: string) => {
     if (!url) return
@@ -174,48 +200,103 @@ export default function AdminPage() {
   }
 
   const addCase = async () => {
-    if (disabled) return
+    if (!newCase.isShort && disabled) return
     setErrorMsg(null)
     setSuccessMsg(null)
     setSubmitLoading(true)
-    let imageUrl = newCase.image?.trim() || ''
-    if (imageFile) {
-      try {
-        imageUrl = await uploadImage(imageFile)
-      } catch (err) {
-        console.error('Supabase upload error:', err)
-        setErrorMsg(t.admin.upload_failed)
-        imageUrl = ''
+    try {
+      if (newCase.isShort) {
+        let videoUrl = newCase.videoUrl?.trim() || ''
+        if (videoFile) {
+          try {
+            videoUrl = await uploadVideo(videoFile)
+          } catch (err) {
+            console.error('Supabase upload error (video):', err)
+            setErrorMsg(t.admin.upload_failed)
+            setSubmitLoading(false)
+            return
+          }
+        }
+        const payload: Omit<Case, 'id'> = {
+          title: newCase.title,
+          description: newCase.shortDescription || '',
+          image: '',
+          category: 'Shorts',
+          rating: 0,
+          year: new Date().getFullYear(),
+          is_short: true,
+          video_url: videoUrl || '',
+          short_description: newCase.shortDescription || null,
+        }
+        const { error } = await supabase.from('cases').insert([payload])
+        if (error) {
+          setErrorMsg(t.admin.save_error)
+        } else {
+          await fetchCases()
+          setNewCase({
+            title: '',
+            category: '',
+            image: '',
+            isShort: false,
+            videoUrl: '',
+            shortDescription: '',
+            rating: '',
+            year: '',
+            description: '',
+          })
+          setImageFile(null)
+          setVideoFile(null)
+          setSuccessMsg(t.admin.add_success)
+        }
+      } else {
+        let imageUrl = newCase.image?.trim() || ''
+        if (imageFile) {
+          try {
+            imageUrl = await uploadImage(imageFile)
+          } catch (err) {
+            console.error('Supabase upload error:', err)
+            setErrorMsg(t.admin.upload_failed)
+            imageUrl = ''
+          }
+        }
+        const payload: Omit<Case, 'id'> = {
+          title: newCase.title,
+          description: newCase.description,
+          image: imageUrl || '',
+          category: newCase.category?.trim() || 'General',
+          rating: parseFloat(newCase.rating),
+          year: parseInt(newCase.year, 10),
+          is_short: false,
+          video_url: '',
+          short_description: null,
+        }
+        const { error } = await supabase.from('cases').insert([payload])
+        if (error) {
+          setErrorMsg(t.admin.save_error)
+        } else {
+          await fetchCases()
+          setNewCase({
+            title: '',
+            category: '',
+            image: '',
+            isShort: false,
+            videoUrl: '',
+            shortDescription: '',
+            rating: '',
+            year: '',
+            description: '',
+          })
+          setImageFile(null)
+          setSuccessMsg(t.admin.add_success)
+        }
       }
-    }
-    const payload: Omit<Case, 'id'> = {
-      title: newCase.title,
-      description: newCase.description,
-      image: imageUrl || '',
-      category: newCase.category?.trim() || 'General',
-      rating: parseFloat(newCase.rating),
-      year: parseInt(newCase.year, 10),
-      videoId: newCase.videoId,
-    }
-    const { error } = await supabase.from('cases').insert([payload])
-    if (error) {
+    } finally {
       setSubmitLoading(false)
-      setErrorMsg(t.admin.save_error)
-      return
     }
-    await fetchCases()
-    setNewCase({
-      title: '',
-      category: '',
-      image: '',
-      videoId: '',
-      rating: '',
-      year: '',
-      description: '',
-    })
-    setImageFile(null)
-    setSuccessMsg(t.admin.add_success)
-    setSubmitLoading(false)
+  }
+  const addShort = async () => {
+    setNewCase((prev) => ({ ...prev, isShort: true }))
+    await addCase()
   }
 
   const handleEdit = (c: Case) => {
@@ -224,12 +305,15 @@ export default function AdminPage() {
       title: c.title,
       category: c.category || '',
       image: c.image || '',
-      videoId: c.videoId || '',
       rating: String(c.rating ?? ''),
       year: String(c.year ?? ''),
       description: c.description || '',
+      isShort: !!c.is_short,
+      videoUrl: c.video_url || '',
+      shortDescription: c.short_description || '',
     })
     setImageFile(null)
+    setVideoFile(null)
   }
 
   const handleUpdate = async () => {
@@ -249,14 +333,31 @@ export default function AdminPage() {
         imageUrl = newCase.image || ''
       }
     }
+    let videoUrl = newCase.videoUrl?.trim() || ''
+    if (newCase.isShort && videoFile) {
+      try {
+        const newVideoUrl = await uploadVideo(videoFile)
+        const oldPath = newCase.videoUrl ? extractVideoStoragePathFromUrl(newCase.videoUrl) : null
+        if (oldPath) {
+          await supabase.storage.from('short-videos').remove([oldPath])
+        }
+        videoUrl = newVideoUrl
+      } catch (err) {
+        console.error('Supabase upload error (video):', err)
+        setErrorMsg(t.admin.upload_failed)
+        videoUrl = newCase.videoUrl || ''
+      }
+    }
     const payload: Partial<Case> = {
       title: newCase.title,
-      description: newCase.description,
+      description: newCase.isShort ? (newCase.shortDescription || '') : newCase.description,
       image: imageUrl,
-      category: newCase.category?.trim() || 'General',
-      rating: parseFloat(newCase.rating),
-      year: parseInt(newCase.year, 10),
-      videoId: newCase.videoId,
+      category: newCase.isShort ? 'Shorts' : (newCase.category?.trim() || 'General'),
+      rating: newCase.isShort ? 0 : parseFloat(newCase.rating),
+      year: newCase.isShort ? new Date().getFullYear() : parseInt(newCase.year, 10),
+      is_short: newCase.isShort,
+      video_url: newCase.isShort ? videoUrl : '',
+      short_description: newCase.isShort ? (newCase.shortDescription || null) : null,
     }
     await supabase.from('cases').update(payload).match({ id: Number(editingId) })
     await fetchCases()
@@ -265,16 +366,19 @@ export default function AdminPage() {
       title: '',
       category: '',
       image: '',
-      videoId: '',
+      isShort: false,
+      videoUrl: '',
+      shortDescription: '',
       rating: '',
       year: '',
       description: '',
     })
     setImageFile(null)
+    setVideoFile(null)
     setSubmitLoading(false)
   }
 
-  const handleDeleteCase = async (caseId: string | number, imageUrl?: string | null) => {
+  const handleDeleteCase = async (caseId: string | number, imageUrl?: string | null, videoUrl?: string | null) => {
     const ok = window.confirm('Вы уверены, что хотите удалить это дело?')
     if (!ok) return
     setErrorMsg(null)
@@ -286,6 +390,15 @@ export default function AdminPage() {
           const { error: storageError } = await supabase.storage.from('case-images').remove([path])
           if (storageError) {
             console.error('Storage delete error:', storageError)
+          }
+        }
+      }
+      if (videoUrl) {
+        const vpath = extractVideoStoragePathFromUrl(videoUrl)
+        if (vpath) {
+          const { error: vErr } = await supabase.storage.from('short-videos').remove([vpath])
+          if (vErr) {
+            console.error('Storage delete error:', vErr)
           }
         }
       }
@@ -371,12 +484,7 @@ export default function AdminPage() {
                 className="w-full rounded-md bg-brand-dark text-white file:text-white file:bg-brand-dark file:border file:border-white/10 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
               />
             </div>
-            <input
-              value={newCase.videoId}
-              onChange={(e) => setNewCase({ ...newCase, videoId: e.target.value })}
-              placeholder={t.admin.field_video_id}
-              className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
-            />
+            
             <input
               value={newCase.rating}
               onChange={(e) => setNewCase({ ...newCase, rating: e.target.value })}
@@ -428,7 +536,9 @@ export default function AdminPage() {
                       title: '',
                       category: '',
                       image: '',
-                      videoId: '',
+                      isShort: false,
+                      videoUrl: '',
+                      shortDescription: '',
                       rating: '',
                       year: '',
                       description: '',
@@ -491,7 +601,7 @@ export default function AdminPage() {
                     {t.common.edit}
                   </button>
                 <button
-                  onClick={() => handleDeleteCase(c.id, c.image)}
+                  onClick={() => handleDeleteCase(c.id, c.image, c.video_url)}
                   className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-red text-white hover:bg-brand-red/90 transition"
                   title={t.common.delete}
                 >
@@ -501,6 +611,56 @@ export default function AdminPage() {
                 </div>
               </div>
             ))}
+          </div>
+        </section>
+        
+        <section className="rounded-xl bg-brand-dark/60 border border-white/10 p-4">
+          <h3 className="text-lg font-semibold">Добавить Short</h3>
+          <div className="mt-4 space-y-3">
+            {errorMsg && <p className="text-sm text-red-400">{errorMsg}</p>}
+            {successMsg && <p className="text-sm text-green-400">{successMsg}</p>}
+            <input
+              value={newCase.title}
+              onChange={(e) => setNewCase({ ...newCase, title: e.target.value })}
+              placeholder={t.admin.field_title}
+              className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+            />
+            <div>
+              <p className="text-xs text-gray-400 mb-1">Видео файл (MP4)</p>
+              <input
+                type="file"
+                accept="video/*"
+                onChange={(e) => {
+                  const f = e.target.files?.[0] || null
+                  setVideoFile(f)
+                }}
+                className="w-full rounded-md bg-brand-dark text-white file:text-white file:bg-brand-dark file:border file:border-white/10 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+              />
+            </div>
+            <textarea
+              value={newCase.shortDescription}
+              onChange={(e) => setNewCase({ ...newCase, shortDescription: e.target.value })}
+              placeholder="Короткое описание"
+              rows={3}
+              className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+            />
+            <button
+              disabled={submitLoading || (!videoFile && !newCase.videoUrl) || !newCase.title}
+              onClick={addShort}
+              className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submitLoading ? (
+                <span className="inline-flex items-center gap-2">
+                  <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 004 12z" />
+                  </svg>
+                  {t.common.loading}
+                </span>
+              ) : (
+                'Добавить Short'
+              )}
+            </button>
           </div>
         </section>
       </main>

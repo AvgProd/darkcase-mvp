@@ -11,7 +11,6 @@ export const CASES: Case[] = [
     category: 'Trending',
     rating: 9.6,
     year: 2021,
-    videoId: 'M7lc1UVf-VE',
   },
   {
     id: 'case-2',
@@ -23,7 +22,6 @@ export const CASES: Case[] = [
     category: 'Unsolved',
     rating: 9.2,
     year: 2020,
-    videoId: 'M7lc1UVf-VE',
   },
   {
     id: 'case-3',
@@ -35,7 +33,6 @@ export const CASES: Case[] = [
     category: 'Serial Killers',
     rating: 9.8,
     year: 2022,
-    videoId: 'M7lc1UVf-VE',
   },
   {
     id: 'case-4',
@@ -47,7 +44,6 @@ export const CASES: Case[] = [
     category: 'Trending',
     rating: 9.0,
     year: 2023,
-    videoId: 'M7lc1UVf-VE',
   },
   {
     id: 'case-5',
@@ -59,7 +55,6 @@ export const CASES: Case[] = [
     category: 'Unsolved',
     rating: 8.9,
     year: 2019,
-    videoId: 'M7lc1UVf-VE',
   },
   {
     id: 'case-6',
@@ -71,7 +66,6 @@ export const CASES: Case[] = [
     category: 'Serial Killers',
     rating: 9.4,
     year: 2024,
-    videoId: 'M7lc1UVf-VE',
   },
   {
     id: 'case-7',
@@ -83,7 +77,6 @@ export const CASES: Case[] = [
     category: 'Trending',
     rating: 9.1,
     year: 2024,
-    videoId: 'M7lc1UVf-VE',
   },
   {
     id: 'case-8',
@@ -95,7 +88,6 @@ export const CASES: Case[] = [
     category: 'Unsolved',
     rating: 9.3,
     year: 2023,
-    videoId: 'M7lc1UVf-VE',
   },
 ]
 

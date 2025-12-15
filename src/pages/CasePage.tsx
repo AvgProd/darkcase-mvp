@@ -3,7 +3,6 @@ import { useParams, Link } from 'react-router-dom'
 import type { Case } from '../types/Case'
 import { supabase } from '../lib/supabase'
 import { ArrowLeft, Play } from 'lucide-react'
-import YouTube from 'react-youtube'
 import { useT } from '../hooks/useTranslation'
 
 export default function CasePage() {
@@ -63,28 +62,29 @@ export default function CasePage() {
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
-            <button
-              onClick={() => setIsPlaying(true)}
-              className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-brand-red text-white flex items-center justify-center hover:bg-brand-red/90 transition"
-              style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
-            >
-              <Play className="w-7 h-7" />
-            </button>
+            {item.is_short && item.video_url && String(item.video_url).trim().length > 0 && (
+              <button
+                onClick={() => setIsPlaying(true)}
+                className="absolute inset-0 m-auto w-16 h-16 rounded-full bg-brand-red text-white flex items-center justify-center hover:bg-brand-red/90 transition"
+                style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
+              >
+                <Play className="w-7 h-7" />
+              </button>
+            )}
           </div>
         ) : (
           <div className="w-full">
-            <YouTube
-              videoId={item.videoId}
-              opts={{
-                width: '100%',
-                height: '250',
-                playerVars: {
-                  autoplay: 1,
-                  modestbranding: 1,
-                  rel: 0,
-                },
-              }}
-            />
+            {item.is_short && item.video_url ? (
+              <video
+                src={item.video_url}
+                className="w-full h-[250px] object-contain bg-black"
+                autoPlay
+                controls
+                playsInline
+              />
+            ) : (
+              <div className="relative w-full aspect-video bg-black" />
+            )}
           </div>
         )}
       </div>
@@ -95,7 +95,7 @@ export default function CasePage() {
           <span>{item.year}</span> • <span>{item.category}</span> •{' '}
           <span className="text-yellow-300 font-medium">{item.rating} ⭐</span>
         </div>
-        {!isPlaying && (
+        {!isPlaying && item.is_short && item.video_url && String(item.video_url).trim().length > 0 && (
           <button
             onClick={() => setIsPlaying(true)}
             className="mt-4 w-full md:w-auto inline-flex items-center gap-2 px-4 py-2 rounded-md bg-brand-red text-white font-semibold hover:bg-brand-red/90 transition"

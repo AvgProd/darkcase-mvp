@@ -6,7 +6,9 @@ export interface Case {
   category: string
   rating: number
   year: number
-  videoId: string
+  video_url?: string
+  is_short?: boolean
+  short_description?: string | null
 }
 
 export type GroupedCases = Record<string, Case[]>
