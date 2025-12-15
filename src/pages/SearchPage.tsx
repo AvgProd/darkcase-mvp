@@ -1,18 +1,31 @@
-import React, { useMemo, useState } from 'react'
-import { CASES } from '../data/mockData'
+import React, { useState } from 'react'
 import { Search as SearchIcon, Frown } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
+import type { Case } from '../types'
 
 export default function SearchPage() {
   const [query, setQuery] = useState('')
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase()
-    if (!q) return []
-    return CASES.filter((c) => c.title.toLowerCase().includes(q))
-  }, [query])
-
-  const showEmpty = query.trim().length > 0 && filtered.length === 0
+  const [results, setResults] = useState<Case[]>([])
+ 
+  const handleSearch = async (q: string) => {
+    const value = q.trim()
+    if (!value) {
+      setResults([])
+      return
+    }
+    const { data, error } = await supabase
+      .from('cases')
+      .select('*')
+      .ilike('title', `%${value}%`)
+    if (!error && data) {
+      setResults(data as Case[])
+    } else {
+      setResults([])
+    }
+  }
+ 
+  const showEmpty = query.trim().length > 0 && results.length === 0
   const showTop = query.trim().length === 0
 
   return (
@@ -22,7 +35,11 @@ export default function SearchPage() {
           <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => {
+              const v = e.target.value
+              setQuery(v)
+              handleSearch(v)
+            }}
             placeholder="Search cases, detectives..."
             className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 pl-10 pr-3 py-2 outline-none border border-white/10 focus:border-white/20"
           />
@@ -48,7 +65,7 @@ export default function SearchPage() {
       {!showTop && !showEmpty && (
         <div className="px-4 py-4">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filtered.map((c) => (
+            {results.map((c) => (
               <Link key={c.id} to={`/case/${c.id}`} className="group">
                 <div className="relative w-full rounded-md overflow-hidden bg-brand-dark border border-white/10">
                   <div className="pb-[150%]" />
@@ -70,7 +87,7 @@ export default function SearchPage() {
         <div className="w-full flex items-center justify-center py-24">
           <div className="flex items-center gap-3 text-gray-400">
             <Frown className="w-6 h-6" />
-            <span>No cases found</span>
+            <span>Ничего не найдено.</span>
           </div>
         </div>
       )}
