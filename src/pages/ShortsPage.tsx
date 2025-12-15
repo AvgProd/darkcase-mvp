@@ -1,13 +1,32 @@
-import React from 'react'
-import { SHORTS } from '../data/mockData'
+import React, { useEffect, useState } from 'react'
 import ShortsPlayer from '../components/ui/ShortsPlayer'
+import type { Case } from '../types/Case'
+import { supabase } from '../lib/supabase'
 
 export default function ShortsPage() {
-  return (
-    <div className="h-screen w-full overflow-y-scroll snap-y snap-mandatory bg-black pb-20 scrollbar-hide">
-      {SHORTS.map((s) => (
-        <ShortsPlayer key={s.id} title={s.title} videoUrl={s.videoUrl} />
-      ))}
-    </div>
-  )
+  const [items, setItems] = useState<Case[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchCases = async () => {
+      const { data, error } = await supabase.from('cases').select('*').order('id', { ascending: true })
+      if (!error && data) {
+        setItems(data as Case[])
+      } else {
+        setItems([])
+      }
+      setLoading(false)
+    }
+    fetchCases()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="h-screen w-full bg-black pb-20 flex items-center justify-center">
+        <p className="text-gray-400">Загрузка...</p>
+      </div>
+    )
+  }
+
+  return <div className="h-screen w-full bg-black pb-20">{items.length > 0 && <ShortsPlayer items={items} />}</div>
 }

@@ -336,23 +336,45 @@ export default function AdminPage() {
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             {editingId ? (
-              <button
-                disabled={disabled || submitLoading}
-                onClick={handleUpdate}
-                className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submitLoading ? (
-                  <span className="inline-flex items-center gap-2">
-                    <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 004 12z" />
-                    </svg>
-                    Загрузка...
-                  </span>
-                ) : (
-                  'ОБНОВИТЬ ДЕЛО'
-                )}
-              </button>
+              <div>
+                <button
+                  disabled={disabled || submitLoading}
+                  onClick={handleUpdate}
+                  className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {submitLoading ? (
+                    <span className="inline-flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 004 12z" />
+                      </svg>
+                      Загрузка...
+                    </span>
+                  ) : (
+                    'ОБНОВИТЬ ДЕЛО'
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingId(null)
+                    setNewCase({
+                      title: '',
+                      category: '',
+                      image: '',
+                      videoId: '',
+                      rating: '',
+                      year: '',
+                      description: '',
+                    })
+                    setImageFile(null)
+                    setErrorMsg(null)
+                  }}
+                  className="mt-2 w-full rounded-md bg-brand-dark text-white font-semibold py-2 border border-white/10 hover:bg-brand-dark/80 transition"
+                >
+                  Отменить редактирование
+                </button>
+              </div>
             ) : (
               <button
                 disabled={disabled || submitLoading}
