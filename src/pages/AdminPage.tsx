@@ -233,10 +233,20 @@ export default function AdminPage() {
 
   const handleUpdate = async () => {
     if (!editingId) return
+    setErrorMsg(null)
+    setSuccessMsg(null)
+    setSubmitLoading(true)
     let imageUrl = newCase.image
     if (imageFile) {
-      await deleteOldImageIfNeeded(newCase.image)
-      imageUrl = await uploadImage(imageFile)
+      try {
+        const newUrl = await uploadImage(imageFile)
+        imageUrl = newUrl
+        await deleteOldImageIfNeeded(newCase.image)
+      } catch (err) {
+        console.error('Supabase upload error:', err)
+        setErrorMsg(t.admin.upload_failed)
+        imageUrl = newCase.image || ''
+      }
     }
     const payload: Partial<Case> = {
       title: newCase.title,
@@ -260,6 +270,7 @@ export default function AdminPage() {
       description: '',
     })
     setImageFile(null)
+    setSubmitLoading(false)
   }
 
   const handleDeleteCase = async (caseId: string | number, imageUrl?: string | null) => {
