@@ -97,27 +97,58 @@ export default function AdminPage() {
       img.onerror = rej
       img.src = src
     })
-    const scaleH = maxHeight / img.height
-    const scaleW = maxWidth / img.width
-    const scale = Math.min(scaleH, scaleW, 1)
-    const w = Math.max(1, Math.floor(img.width * scale))
-    const h = Math.max(1, Math.floor(img.height * scale))
+    const targetAspect = 9 / 16
+    const srcAspect = img.width / img.height
+    let targetH = Math.min(img.height, maxHeight)
+    let targetW = Math.floor(targetH * targetAspect)
+    if (targetW > maxWidth) {
+      targetW = maxWidth
+      targetH = Math.floor(maxWidth * (16 / 9))
+    }
+    let cropW: number
+    let cropH: number
+    let sx: number
+    let sy: number
+    if (srcAspect > targetAspect) {
+      cropH = img.height
+      cropW = Math.floor(cropH * targetAspect)
+      sx = Math.floor((img.width - cropW) / 2)
+      sy = 0
+    } else {
+      cropW = img.width
+      cropH = Math.floor(cropW / targetAspect)
+      sx = 0
+      sy = Math.floor((img.height - cropH) / 2)
+    }
     const canvas = document.createElement('canvas')
-    canvas.width = w
-    canvas.height = h
     const ctx = canvas.getContext('2d')!
-    ctx.drawImage(img, 0, 0, w, h)
-    let quality = 0.8
+    let currentW = targetW
+    let currentH = targetH
+    canvas.width = currentW
+    canvas.height = currentH
+    ctx.drawImage(img, sx, sy, cropW, cropH, 0, 0, currentW, currentH)
+    let quality = 0.82
     let blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, 'image/jpeg', quality)
     )
-    while (blob && blob.size > targetSize && quality > 0.3) {
-      quality -= 0.1
+    let iterations = 0
+    while (blob && blob.size > targetSize && iterations < 20) {
+      if (quality > 0.4) {
+        quality -= 0.08
+      } else {
+        currentW = Math.max(120, Math.floor(currentW * 0.9))
+        currentH = Math.max(213, Math.floor(currentH * 0.9))
+        canvas.width = currentW
+        canvas.height = currentH
+        ctx.drawImage(img, sx, sy, cropW, cropH, 0, 0, currentW, currentH)
+      }
       blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob(resolve, 'image/jpeg', quality)
       )
+      iterations += 1
     }
     if (!blob) throw new Error('Image compression failed')
+    if (blob.size > targetSize) throw new Error('Image exceeds target size after compression')
     const name = file.name.replace(/\s+/g, '-').toLowerCase().replace(/\.[^.]+$/, '') + '.jpg'
     return new File([blob], name, { type: 'image/jpeg' })
   }
@@ -152,9 +183,8 @@ export default function AdminPage() {
         imageUrl = await uploadImage(imageFile)
       } catch (err) {
         console.error('Supabase upload error:', err)
-        setSubmitLoading(false)
-        setErrorMsg('Не удалось загрузить изображение. Попробуйте снова.')
-        return
+        setErrorMsg(t.admin.upload_failed)
+        imageUrl = ''
       }
     }
     const payload: Omit<Case, 'id'> = {
