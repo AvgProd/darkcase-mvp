@@ -12,10 +12,10 @@ export default function CatalogPage() {
       key={key}
       onClick={() => setActiveTab(key)}
       className={
-        'inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-colors border shadow-sm ' +
+        'inline-flex items-center px-3 py-2 text-sm font-medium transition-colors border-b-2 ' +
         (activeTab === key
-          ? 'bg-brand-red text-white border-brand-red shadow-black/40'
-          : 'bg-[#1a1a1a] text-gray-300 border-white/10 hover:bg-[#222] hover:text-white')
+          ? 'text-emerald-400 border-emerald-400'
+          : 'text-gray-400 border-transparent hover:text-white')
       }
     >
       {label}
@@ -41,7 +41,7 @@ export default function CatalogPage() {
     <div className="min-h-screen w-full bg-brand-black text-white pb-24">
       <header className="sticky top-0 z-20 bg-brand-black/80 backdrop-blur px-4 py-3 border-b border-white/10">
         <div className="max-w-[560px] mx-auto">
-          <h1 className="text-xl font-bold">{t.nav.catalog}</h1>
+          <h1 className="text-xl font-bold text-center">{t.nav.catalog}</h1>
           <div className="mt-3 relative">
             <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -54,8 +54,8 @@ export default function CatalogPage() {
         </div>
       </header>
 
-      <section className="mt-4 px-4 md:px-8">
-        <div className="max-w-[560px] mx-auto flex items-center gap-3 overflow-x-scroll whitespace-nowrap scrollbar-hide">
+      <section className="mt-4 px-4 md:px-8 border-b border-white/10">
+        <div className="max-w-[560px] mx-auto flex items-center gap-4 overflow-x-scroll whitespace-nowrap scrollbar-hide">
           {tabBtn('movies', 'Фильмы')}
           {tabBtn('series', 'Сериалы')}
           {tabBtn('kids', 'Детям')}
