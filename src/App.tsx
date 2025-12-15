@@ -20,8 +20,8 @@ export default function App() {
         if (tg.isVersionAtLeast?.('7.7')) {
           tg.disableVerticalSwipes?.()
         }
-      } catch {
-        console.log('Telegram styling not supported on this platform')
+      } catch (e) {
+        console.log('Telegram styling features not supported on this platform')
       }
     }
   }, [])
