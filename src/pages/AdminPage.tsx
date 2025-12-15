@@ -1,12 +1,13 @@
-import React, { useMemo, useState } from 'react'
-import { CASES } from '../data/mockData'
+import React, { useEffect, useMemo, useState } from 'react'
 import type { Case } from '../types'
 import { Trash } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
 export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
-  const [cases, setCases] = useState<Case[]>(CASES)
+  const [cases, setCases] = useState<Case[]>([])
+  const [loading, setLoading] = useState(false)
 
   const [title, setTitle] = useState('')
   const [category, setCategory] = useState<'Trending' | 'Serial Killers' | 'Unsolved'>('Trending')
@@ -31,10 +32,23 @@ export default function AdminPage() {
     setPassword('')
   }
 
-  const addCase = () => {
+  const fetchCases = async () => {
+    setLoading(true)
+    const { data, error } = await supabase.from('cases').select('*')
+    if (!error && data) {
+      setCases(data as Case[])
+    }
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchCases()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const addCase = async () => {
     if (disabled) return
-    const newCase: Case = {
-      id: `admin-${Date.now()}`,
+    const payload: Omit<Case, 'id'> = {
       title,
       description,
       image,
@@ -43,7 +57,8 @@ export default function AdminPage() {
       year: new Date().getFullYear(),
       videoId,
     }
-    setCases((prev) => [newCase, ...prev])
+    await supabase.from('cases').insert([payload])
+    await fetchCases()
     setTitle('')
     setImage('')
     setVideoId('')
@@ -52,8 +67,9 @@ export default function AdminPage() {
     setCategory('Trending')
   }
 
-  const deleteCase = (id: string) => {
-    setCases((prev) => prev.filter((c) => c.id !== id))
+  const deleteCase = async (id: string) => {
+    await supabase.from('cases').delete().eq('id', id)
+    await fetchCases()
   }
 
   if (!authenticated) {
@@ -153,7 +169,8 @@ export default function AdminPage() {
         <section className="rounded-xl bg-brand-dark/60 border border-white/10 p-4">
           <h3 className="text-lg font-semibold">Manage Cases</h3>
           <div className="mt-4 space-y-3">
-            {cases.map((c) => (
+            {loading && <p className="text-sm text-gray-400">Loading...</p>}
+            {!loading && cases.map((c) => (
               <div
                 key={c.id}
                 className="flex items-center justify-between gap-3 rounded-md bg-brand-dark px-3 py-2 border border-white/10"

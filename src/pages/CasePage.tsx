@@ -1,12 +1,36 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { CASES } from '../data/mockData'
+import type { Case } from '../types'
+import { supabase } from '../lib/supabase'
 import { ArrowLeft, Play } from 'lucide-react'
 
 export default function CasePage() {
   const { id } = useParams()
-  const item = CASES.find((c) => c.id === id)
+  const [item, setItem] = useState<Case | null>(null)
+  const [loading, setLoading] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
+
+  useEffect(() => {
+    const fetchItem = async () => {
+      if (!id) return
+      const { data, error } = await supabase.from('cases').select('*').eq('id', id).single()
+      if (!error && data) {
+        setItem(data as Case)
+      } else {
+        setItem(null)
+      }
+      setLoading(false)
+    }
+    fetchItem()
+  }, [id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-brand-black text-white flex items-center justify-center">
+        <p className="text-lg text-gray-400">Loading...</p>
+      </div>
+    )
+  }
 
   if (!item) {
     return (

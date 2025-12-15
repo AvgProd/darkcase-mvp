@@ -1,20 +1,44 @@
-import React from 'react'
-import { CASES } from '../data/mockData'
+import React, { useEffect, useState } from 'react'
 import HeroSection from '../components/ui/HeroSection'
 import CaseRow from '../components/ui/CaseRow'
+import type { Case } from '../types'
+import { supabase } from '../lib/supabase'
 
 export default function HomePage() {
-  const trending = CASES.filter((c) => c.category === 'Trending')
-  const killers = CASES.filter((c) => c.category === 'Serial Killers')
-  const unsolved = CASES.filter((c) => c.category === 'Unsolved')
+  const [cases, setCases] = useState<Case[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchCases = async () => {
+      const { data, error } = await supabase.from('cases').select('*')
+      if (!error && data) {
+        setCases(data as Case[])
+      }
+      setLoading(false)
+    }
+    fetchCases()
+  }, [])
+
+  const trending = cases.filter((c) => c.category === 'Trending')
+  const killers = cases.filter((c) => c.category === 'Serial Killers')
+  const unsolved = cases.filter((c) => c.category === 'Unsolved')
 
   return (
     <div className="bg-brand-black text-white pb-24">
-      <HeroSection featuredCase={CASES[0]} />
+      {loading && (
+        <div className="h-[50vh] flex items-center justify-center">
+          <p className="text-gray-400">Loading...</p>
+        </div>
+      )}
+      {!loading && cases[0] && <HeroSection featuredCase={cases[0]} />}
       <div className="mt-4">
-        <CaseRow title="Trending Now" cases={trending} />
-        <CaseRow title="Serial Killers" cases={killers} />
-        <CaseRow title="Unsolved Mysteries" cases={unsolved} />
+        {!loading && (
+          <>
+            <CaseRow title="Trending Now" cases={trending} />
+            <CaseRow title="Serial Killers" cases={killers} />
+            <CaseRow title="Unsolved Mysteries" cases={unsolved} />
+          </>
+        )}
       </div>
     </div>
   )
