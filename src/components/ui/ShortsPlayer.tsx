@@ -56,6 +56,9 @@ export default function ShortsPlayer({ items }: Props) {
       <div className="absolute bottom-6 left-4 right-20 pr-4">
         <h4 className="text-lg font-semibold">{current?.title || ''}</h4>
         <p className="text-sm text-gray-300">{t.shorts.author}</p>
+        {current?.short_description && (
+          <p className="mt-1 text-sm text-gray-200">{current.short_description}</p>
+        )}
       </div>
 
       <div className="absolute bottom-6 right-4 flex flex-col items-center gap-4">

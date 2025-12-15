@@ -14,6 +14,7 @@ export default function AdminPage() {
   const [submitLoading, setSubmitLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'catalog' | 'shorts'>('catalog')
 
   type NewCaseForm = {
     title: string
@@ -49,6 +50,12 @@ export default function AdminPage() {
       !newCase.category,
     [newCase]
   )
+  const disabledShort = useMemo(
+    () => !newCase.title || (!videoFile && !newCase.videoUrl),
+    [newCase.title, videoFile, newCase.videoUrl]
+  )
+  const regularCases = useMemo(() => cases.filter((c) => !c.is_short), [cases])
+  const shortsCases = useMemo(() => cases.filter((c) => !!c.is_short), [cases])
 
   const handleLogin = () => {
     if (password === 'admin123') {
@@ -453,7 +460,24 @@ export default function AdminPage() {
         </button>
       </header>
 
-      <main className="px-4 md:px-8 py-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <main className="px-4 md:px-8 py-6">
+        <div className="max-w-[960px] mx-auto">
+          <div className="flex items-center gap-4 border-b border-white/10">
+            <button
+              onClick={() => setActiveTab('catalog')}
+              className={'px-3 py-2 text-sm font-medium ' + (activeTab === 'catalog' ? 'text-brand-red border-b-2 border-brand-red' : 'text-gray-400 hover:text-white')}
+            >
+              Управление Каталогом
+            </button>
+            <button
+              onClick={() => setActiveTab('shorts')}
+              className={'px-3 py-2 text-sm font-medium ' + (activeTab === 'shorts' ? 'text-brand-red border-b-2 border-brand-red' : 'text-gray-400 hover:text-white')}
+            >
+              Управление Shorts
+            </button>
+          </div>
+          
+          <div className={'mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 ' + (activeTab === 'catalog' ? '' : 'hidden')}>
         <section className="rounded-xl bg-brand-dark/60 border border-white/10 p-4">
           <h3 className="text-lg font-semibold">{t.admin.add_case}</h3>
           <div className="mt-4 space-y-3">
@@ -571,12 +595,12 @@ export default function AdminPage() {
             )}
           </div>
         </section>
-
+ 
         <section className="rounded-xl bg-brand-dark/60 border border-white/10 p-4">
           <h3 className="text-lg font-semibold">{t.admin.manage_cases}</h3>
           <div className="mt-4 space-y-3">
             {loading && <p className="text-sm text-gray-400">{t.common.loading}</p>}
-            {!loading && cases.map((c) => (
+            {!loading && regularCases.map((c) => (
               <div
                 key={c.id}
                 className="flex items-center justify-between gap-3 rounded-md bg-brand-dark px-3 py-2 border border-white/10"
@@ -613,9 +637,12 @@ export default function AdminPage() {
             ))}
           </div>
         </section>
+          </div>
+          
+          <div className={'mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 ' + (activeTab === 'shorts' ? '' : 'hidden')}>
         
         <section className="rounded-xl bg-brand-dark/60 border border-white/10 p-4">
-          <h3 className="text-lg font-semibold">Добавить Short</h3>
+          <h3 className="text-lg font-semibold">Добавить/Редактировать Short</h3>
           <div className="mt-4 space-y-3">
             {errorMsg && <p className="text-sm text-red-400">{errorMsg}</p>}
             {successMsg && <p className="text-sm text-green-400">{successMsg}</p>}
@@ -644,25 +671,113 @@ export default function AdminPage() {
               rows={3}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
-            <button
-              disabled={submitLoading || (!videoFile && !newCase.videoUrl) || !newCase.title}
-              onClick={addShort}
-              className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {submitLoading ? (
-                <span className="inline-flex items-center gap-2">
-                  <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 004 12z" />
-                  </svg>
-                  {t.common.loading}
-                </span>
-              ) : (
-                'Добавить Short'
-              )}
-            </button>
+            {editingId && newCase.isShort ? (
+              <div>
+                <button
+                  disabled={submitLoading}
+                  onClick={handleUpdate}
+                  className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {submitLoading ? (
+                    <span className="inline-flex items-center gap-2">
+                      <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 004 12z" />
+                      </svg>
+                      {t.common.loading}
+                    </span>
+                  ) : (
+                    t.admin.update_case
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingId(null)
+                    setNewCase({
+                      title: '',
+                      category: '',
+                      image: '',
+                      isShort: false,
+                      videoUrl: '',
+                      shortDescription: '',
+                      rating: '',
+                      year: '',
+                      description: '',
+                    })
+                    setErrorMsg(null)
+                    setVideoFile(null)
+                  }}
+                  className="mt-2 w-full rounded-md bg-brand-dark text-white font-semibold py-2 border border-white/10 hover:bg-brand-dark/80 transition"
+                >
+                  {t.admin.cancel_edit}
+                </button>
+              </div>
+            ) : (
+              <button
+                disabled={disabledShort || submitLoading}
+                onClick={addShort}
+                className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submitLoading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <svg className="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4A4 4 0 004 12z" />
+                    </svg>
+                    {t.common.loading}
+                  </span>
+                ) : (
+                  'Добавить Short'
+                )}
+              </button>
+            )}
           </div>
         </section>
+        
+        <section className="rounded-xl bg-brand-dark/60 border border-white/10 p-4">
+          <h3 className="text-lg font-semibold">Список Shorts</h3>
+          <div className="mt-4 space-y-3">
+            {loading && <p className="text-sm text-gray-400">{t.common.loading}</p>}
+            {!loading && shortsCases.map((c) => (
+              <div
+                key={c.id}
+                className="flex items-center justify-between gap-3 rounded-md bg-brand-dark px-3 py-2 border border-white/10"
+              >
+                <div className="flex items-center gap-3">
+                  {c.image ? (
+                    <img src={c.image} alt={c.title} className="w-12 h-16 object-cover rounded" />
+                  ) : (
+                    <div className="w-12 h-16 rounded bg-gradient-to-b from-[#1f1f1f] to-[#0e0e0e] border border-white/10" />
+                  )}
+                  <div>
+                    <p className="text-sm font-medium">{c.title}</p>
+                    <p className="text-xs text-gray-400">Short • {c.year}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleEdit(c)}
+                    className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-dark text-white border border-white/10 hover:bg-brand-dark/80 transition"
+                    title={t.common.edit}
+                  >
+                    {t.common.edit}
+                  </button>
+                  <button
+                    onClick={() => handleDeleteCase(c.id, c.image, c.video_url)}
+                    className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-red text-white hover:bg-brand-red/90 transition"
+                    title={t.common.delete}
+                  >
+                    <Trash className="w-4 h-4" />
+                    <span>{t.common.delete}</span>
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+          </div>
+        </div>
       </main>
     </div>
   )
