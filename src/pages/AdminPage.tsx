@@ -82,7 +82,7 @@ export default function AdminPage() {
     return url.substring(idx + marker.length)
   }
 
-  const compressImage = async (file: File, maxWidth = 1280, targetSize = 250 * 1024) => {
+  const compressImage = async (file: File, maxHeight = 1280, maxWidth = 720, targetSize = 250 * 1024) => {
     const toDataURL = (f: File) =>
       new Promise<string>((resolve, reject) => {
         const reader = new FileReader()
@@ -97,7 +97,9 @@ export default function AdminPage() {
       img.onerror = rej
       img.src = src
     })
-    const scale = img.width > maxWidth ? maxWidth / img.width : 1
+    const scaleH = maxHeight / img.height
+    const scaleW = maxWidth / img.width
+    const scale = Math.min(scaleH, scaleW, 1)
     const w = Math.max(1, Math.floor(img.width * scale))
     const h = Math.max(1, Math.floor(img.height * scale))
     const canvas = document.createElement('canvas')
@@ -109,7 +111,7 @@ export default function AdminPage() {
     let blob = await new Promise<Blob | null>((resolve) =>
       canvas.toBlob(resolve, 'image/jpeg', quality)
     )
-    while (blob && blob.size > targetSize && quality > 0.4) {
+    while (blob && blob.size > targetSize && quality > 0.3) {
       quality -= 0.1
       blob = await new Promise<Blob | null>((resolve) =>
         canvas.toBlob(resolve, 'image/jpeg', quality)
