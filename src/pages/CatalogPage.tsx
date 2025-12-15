@@ -39,7 +39,7 @@ export default function CatalogPage() {
   return (
     <div className="min-h-screen w-full bg-brand-black text-white pb-24">
       <header className="sticky top-0 z-20 bg-brand-black/80 backdrop-blur px-4 py-3 border-b border-white/10">
-        <h1 className="text-xl font-bold">Каталог</h1>
+        <h1 className="text-xl font-bold">{t.nav.catalog}</h1>
       </header>
 
       <section className="px-4 md:px-8 mt-4">

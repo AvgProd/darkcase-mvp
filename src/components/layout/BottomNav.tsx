@@ -33,13 +33,13 @@ export default function BottomNav() {
           <span className={labelBase}>{t.nav.shorts}</span>
         </NavLink>
         <NavLink
-          to="/search"
+          to="/catalog"
           className={({ isActive }) =>
             clsx(itemBase, isActive ? 'text-brand-red' : 'text-gray-500')
           }
         >
           <Search className={iconBase} />
-          <span className={labelBase}>{t.nav.catalog ?? t.nav.search}</span>
+          <span className={labelBase}>{t.nav.catalog}</span>
         </NavLink>
         <NavLink
           to="/my"
@@ -48,7 +48,7 @@ export default function BottomNav() {
           }
         >
           <Bookmark className={iconBase} />
-          <span className={labelBase}>{t.nav.my ?? 'Моё'}</span>
+          <span className={labelBase}>{t.nav.my}</span>
         </NavLink>
         <NavLink
           to="/profile"
