@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import type { Case } from '../types/Case'
 import { supabase } from '../lib/supabase'
 import { ArrowLeft, Play } from 'lucide-react'
 import { useT } from '../hooks/useTranslation'
+import { getProgress, saveProgress } from '../lib/progress'
 
 export default function CasePage() {
   const t = useT()
@@ -11,6 +12,7 @@ export default function CasePage() {
   const [item, setItem] = useState<Case | null>(null)
   const [loading, setLoading] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
+  const videoRef = useRef<HTMLVideoElement | null>(null)
 
   useEffect(() => {
     const fetchItem = async () => {
@@ -26,6 +28,38 @@ export default function CasePage() {
     }
     fetchItem()
   }, [id])
+
+  useEffect(() => {
+    const vid = videoRef.current
+    if (!vid || !item || !isPlaying) return
+    const saved = getProgress(String(item.id))
+    if (saved && saved.positionSec > 0 && saved.positionSec < (saved.durationSec || vid.duration)) {
+      const target = Math.min(saved.positionSec, vid.duration - 2)
+      if (!isNaN(target) && isFinite(target)) {
+        vid.currentTime = target
+      }
+    }
+    const onTime = () => {
+      const positionSec = Math.floor(vid.currentTime || 0)
+      const durationSec = Math.floor(vid.duration || 0)
+      if (durationSec > 0) {
+        saveProgress({
+          id: String(item.id),
+          title: item.title || 'Untitled',
+          positionSec,
+          durationSec,
+          updatedAt: Date.now(),
+        })
+      }
+    }
+    const onPause = onTime
+    vid.addEventListener('timeupdate', onTime)
+    vid.addEventListener('pause', onPause)
+    return () => {
+      vid.removeEventListener('timeupdate', onTime)
+      vid.removeEventListener('pause', onPause)
+    }
+  }, [isPlaying, item])
 
   if (loading) {
     return (
@@ -76,6 +110,7 @@ export default function CasePage() {
           <div className="w-full">
             {item.is_short && item.video_url ? (
               <video
+                ref={videoRef}
                 src={item.video_url ?? undefined}
                 className="w-full h-[250px] object-contain bg-black"
                 autoPlay
