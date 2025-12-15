@@ -1,6 +1,6 @@
 import React from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, Film, Search, User } from 'lucide-react'
+import { Home, Film, Search, User, Bookmark } from 'lucide-react'
 import clsx from 'clsx'
 import { useT } from '../../hooks/useTranslation'
 
@@ -39,7 +39,16 @@ export default function BottomNav() {
           }
         >
           <Search className={iconBase} />
-          <span className={labelBase}>{t.nav.search}</span>
+          <span className={labelBase}>{t.nav.catalog ?? t.nav.search}</span>
+        </NavLink>
+        <NavLink
+          to="/my"
+          className={({ isActive }) =>
+            clsx(itemBase, isActive ? 'text-brand-red' : 'text-gray-500')
+          }
+        >
+          <Bookmark className={iconBase} />
+          <span className={labelBase}>{t.nav.my ?? 'Моё'}</span>
         </NavLink>
         <NavLink
           to="/profile"

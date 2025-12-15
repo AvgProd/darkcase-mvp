@@ -5,6 +5,8 @@ export const ru = {
     search: 'Поиск',
     profile: 'Профиль',
     logout: 'Выход',
+    catalog: 'Каталог',
+    my: 'Моё',
   },
   common: {
     play_now: 'Смотреть сейчас',
