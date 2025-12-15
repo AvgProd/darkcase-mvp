@@ -213,15 +213,14 @@ export default function AdminPage() {
     setSubmitLoading(true)
     try {
       if (newCase.isShort) {
-        let videoUrl = newCase.videoUrl?.trim() || ''
+        let videoUrl: string | null = newCase.videoUrl?.trim() || null
         if (videoFile) {
           try {
             videoUrl = await uploadVideo(videoFile)
           } catch (err) {
             console.error('Supabase upload error (video):', err)
-            setErrorMsg(t.admin.upload_failed)
-            setSubmitLoading(false)
-            return
+            setErrorMsg('Не удалось загрузить видео файл')
+            videoUrl = null
           }
         }
         const payload: Omit<Case, 'id'> = {
@@ -232,7 +231,7 @@ export default function AdminPage() {
           rating: 0,
           year: new Date().getFullYear(),
           is_short: true,
-          video_url: videoUrl || '',
+          video_url: videoUrl,
           short_description: newCase.shortDescription || null,
         }
         const { error } = await supabase.from('cases').insert([payload])
@@ -351,8 +350,8 @@ export default function AdminPage() {
         videoUrl = newVideoUrl
       } catch (err) {
         console.error('Supabase upload error (video):', err)
-        setErrorMsg(t.admin.upload_failed)
-        videoUrl = newCase.videoUrl || ''
+        setErrorMsg('Не удалось загрузить видео файл')
+        videoUrl = ''
       }
     }
     const payload: Partial<Case> = {
@@ -363,7 +362,7 @@ export default function AdminPage() {
       rating: newCase.isShort ? 0 : parseFloat(newCase.rating),
       year: newCase.isShort ? new Date().getFullYear() : parseInt(newCase.year, 10),
       is_short: newCase.isShort,
-      video_url: newCase.isShort ? videoUrl : '',
+      video_url: newCase.isShort ? (videoUrl || null) : '',
       short_description: newCase.isShort ? (newCase.shortDescription || null) : null,
     }
     await supabase.from('cases').update(payload).match({ id: Number(editingId) })
