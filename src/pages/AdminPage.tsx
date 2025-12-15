@@ -9,17 +9,35 @@ export default function AdminPage() {
   const [cases, setCases] = useState<Case[]>([])
   const [loading, setLoading] = useState(false)
 
-  const [title, setTitle] = useState('')
-  const [category, setCategory] = useState<string>('General')
-  const [image, setImage] = useState('')
-  const [videoId, setVideoId] = useState('')
-  const [rating, setRating] = useState('')
-  const [year, setYear] = useState('')
-  const [description, setDescription] = useState('')
+  type NewCaseForm = {
+    title: string
+    category: string
+    image: string
+    videoId: string
+    rating: string
+    year: string
+    description: string
+  }
+  const [newCase, setNewCase] = useState<NewCaseForm>({
+    title: '',
+    category: '',
+    image: '',
+    videoId: '',
+    rating: '',
+    year: '',
+    description: '',
+  })
 
   const disabled = useMemo(
-    () => !title || !image || !videoId || !rating || !year || !description,
-    [title, image, videoId, rating, year, description]
+    () =>
+      !newCase.title ||
+      !newCase.image ||
+      !newCase.videoId ||
+      !newCase.rating ||
+      !newCase.year ||
+      !newCase.description ||
+      !newCase.category,
+    [newCase]
   )
 
   const handleLogin = () => {
@@ -50,23 +68,25 @@ export default function AdminPage() {
   const addCase = async () => {
     if (disabled) return
     const payload: Omit<Case, 'id'> = {
-      title,
-      description,
-      image,
-      category: category?.trim() || 'General',
-      rating: parseFloat(rating),
-      year: parseInt(year, 10),
-      videoId,
+      title: newCase.title,
+      description: newCase.description,
+      image: newCase.image,
+      category: newCase.category?.trim() || 'General',
+      rating: parseFloat(newCase.rating),
+      year: parseInt(newCase.year, 10),
+      videoId: newCase.videoId,
     }
     await supabase.from('cases').insert([payload])
     await fetchCases()
-    setTitle('')
-    setImage('')
-    setVideoId('')
-    setRating('')
-    setYear('')
-    setDescription('')
-    setCategory('General')
+    setNewCase({
+      title: '',
+      category: '',
+      image: '',
+      videoId: '',
+      rating: '',
+      year: '',
+      description: '',
+    })
   }
 
   const deleteCase = async (id: number) => {
@@ -117,38 +137,33 @@ export default function AdminPage() {
           <h3 className="text-lg font-semibold">Add Case</h3>
           <div className="mt-4 space-y-3">
             <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={newCase.title}
+              onChange={(e) => setNewCase({ ...newCase, title: e.target.value })}
               placeholder="Title"
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full rounded-md bg-brand-dark text-white px-3 py-2 outline-none border border-white/10 focus:border-white/20"
-            >
-              <option value="General">General</option>
-              <option value="Trending Now">Trending Now</option>
-              <option value="Serial Killers">Serial Killers</option>
-              <option value="Unsolved">Unsolved</option>
-              <option value="New Releases">New Releases</option>
-              <option value="Classics">Classics</option>
-            </select>
             <input
-              value={image}
-              onChange={(e) => setImage(e.target.value)}
+              type="text"
+              value={newCase.category}
+              onChange={(e) => setNewCase({ ...newCase, category: e.target.value })}
+              placeholder="Category (e.g., Sci-Fi, Trending, 2025)"
+              className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+            />
+            <input
+              value={newCase.image}
+              onChange={(e) => setNewCase({ ...newCase, image: e.target.value })}
               placeholder="Image URL"
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <input
-              value={videoId}
-              onChange={(e) => setVideoId(e.target.value)}
+              value={newCase.videoId}
+              onChange={(e) => setNewCase({ ...newCase, videoId: e.target.value })}
               placeholder="YouTube Video ID"
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <input
-              value={rating}
-              onChange={(e) => setRating(e.target.value)}
+              value={newCase.rating}
+              onChange={(e) => setNewCase({ ...newCase, rating: e.target.value })}
               type="number"
               step="0.1"
               inputMode="decimal"
@@ -156,16 +171,16 @@ export default function AdminPage() {
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <input
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
+              value={newCase.year}
+              onChange={(e) => setNewCase({ ...newCase, year: e.target.value })}
               type="number"
               inputMode="numeric"
               placeholder="Year (e.g., 2024)"
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              value={newCase.description}
+              onChange={(e) => setNewCase({ ...newCase, description: e.target.value })}
               placeholder="Description"
               rows={4}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
