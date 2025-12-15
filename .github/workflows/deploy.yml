@@ -30,10 +30,7 @@ jobs:
               sudo npm install -g pm2
             fi
             sudo apt update
-            sudo apt install -y authbind git
-            sudo touch /etc/authbind/byport/80
-            sudo chown $USER /etc/authbind/byport/80
-            sudo chmod 770 /etc/authbind/byport/80
+            sudo apt install -y git
 
             if [ -d "$HOME/darkcase-mvp" ]; then
               cd "$HOME/darkcase-mvp"
@@ -48,5 +45,6 @@ jobs:
             npm run build
 
             pm2 stop dakcase-app || true
-            authbind --deep pm2 start /usr/bin/node server.js --name "dakcase-app"
+            export PORT=3000
+            pm2 start /usr/bin/node server.js --name "dakcase-app"
             pm2 save
