@@ -1,6 +1,8 @@
+import 'dotenv/config'
 import express from 'express'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { fetchCatalogItems } from './supabase-server.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -18,6 +20,19 @@ app.get('/api/user/library', (req, res) => {
     { title: 'Слово пацана. Кровь на асфальте: 1 сезон 8 серия', progress: 'Осталось 57 минут', image: '/images/pacan_slovo.jpg' },
   ]
   res.json({ success: true, items: libraryItems })
+})
+
+app.get('/api/catalog', async (req, res) => {
+  const items = await fetchCatalogItems()
+  if (items) {
+    return res.json({ success: true, items })
+  }
+  const fallback = [
+    { id: 1, title: 'Черная икра', category: 'Сериалы', image: '/images/black_caviar.jpg' },
+    { id: 2, title: 'Таргет', category: 'Сериалы', image: '/images/target.jpg' },
+    { id: 3, title: 'Qumalaq', category: 'Документальные', image: '/images/qumalaq.jpg' }
+  ]
+  res.json({ success: true, items: fallback })
 })
 
 app.use(express.static(distPath, { index: 'index.html', extensions: ['html'] }))
