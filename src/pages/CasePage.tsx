@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import type { Case } from '../types'
 import { supabase } from '../lib/supabase'
 import { ArrowLeft, Play } from 'lucide-react'
+import YouTube from 'react-youtube'
 
 export default function CasePage() {
   const { id } = useParams()
@@ -68,13 +69,18 @@ export default function CasePage() {
             </button>
           </div>
         ) : (
-          <div className="w-full aspect-video">
-            <iframe
-              className="w-full h-full"
-              src={`https://www.youtube.com/embed/${item.videoId}?autoplay=1&rel=0`}
-              title={item.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowFullScreen
+          <div className="w-full">
+            <YouTube
+              videoId={item.videoId}
+              opts={{
+                width: '100%',
+                height: '250',
+                playerVars: {
+                  autoplay: 1,
+                  modestbranding: 1,
+                  rel: 0,
+                },
+              }}
             />
           </div>
         )}
