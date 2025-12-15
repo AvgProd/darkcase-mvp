@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { Heart, Share2, ChevronUp, ChevronDown } from 'lucide-react'
+import { Heart, Share2, MessageSquare, ChevronUp, ChevronDown } from 'lucide-react'
 import { useT } from '../../hooks/useTranslation'
 import type { Case } from '../../types/Case'
 
@@ -22,6 +22,18 @@ export default function ShortsPlayer({ items }: Props) {
 
   const goPrev = () => setIndex((i) => (i > 0 ? i - 1 : i))
   const goNext = () => setIndex((i) => (i < items.length - 1 ? i + 1 : i))
+  const handleLike = () => {
+    if (!current) return
+    // placeholder for future like integration
+  }
+  const handleShare = () => {
+    if (!current) return
+    // placeholder for future share integration
+  }
+  const handleComment = () => {
+    if (!current) return
+    // placeholder for future comment integration
+  }
 
   return (
     <div className="h-screen w-full relative bg-black pb-20 overflow-hidden">
@@ -47,11 +59,14 @@ export default function ShortsPlayer({ items }: Props) {
       </div>
 
       <div className="absolute bottom-6 right-4 flex flex-col items-center gap-4">
-        <button className="p-3 rounded-full bg-black/60 border border-white/10">
+        <button onClick={handleLike} className="p-3 rounded-full bg-black/60 border border-white/10">
           <Heart className="w-6 h-6 text-white" />
         </button>
-        <button className="p-3 rounded-full bg-black/60 border border-white/10">
+        <button onClick={handleShare} className="p-3 rounded-full bg-black/60 border border-white/10">
           <Share2 className="w-6 h-6 text-white" />
+        </button>
+        <button onClick={handleComment} className="p-3 rounded-full bg-black/60 border border-white/10">
+          <MessageSquare className="w-6 h-6 text-white" />
         </button>
       </div>
 

@@ -15,10 +15,12 @@ export default function ShortsPage() {
       const { data, error } = await supabase
         .from('cases')
         .select('id,title,description,image,category,rating,year,video_url,is_short,short_description')
+        .eq('is_short', true)
+        .not('video_url', 'is', null)
+        .neq('video_url', '')
         .order('id', { ascending: true })
       const list = !error && data ? (data as Case[]) : []
-      const filtered = list.filter((c) => c.is_short && c.video_url && String(c.video_url).trim().length > 0)
-      if (active) setItems(filtered)
+      if (active) setItems(list)
       if (active) setLoading(false)
     }
     fetchCases()
