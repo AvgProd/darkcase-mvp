@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react'
-import type { Case } from '../types'
+import type { Case } from '../types/Case'
 import { Trash } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
@@ -10,7 +10,7 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(false)
 
   const [title, setTitle] = useState('')
-  const [category, setCategory] = useState<'Trending' | 'Serial Killers' | 'Unsolved'>('Trending')
+  const [category, setCategory] = useState<string>('General')
   const [image, setImage] = useState('')
   const [videoId, setVideoId] = useState('')
   const [rating, setRating] = useState('')
@@ -52,8 +52,8 @@ export default function AdminPage() {
       title,
       description,
       image,
-      category,
-      rating,
+      category: category?.trim() || 'General',
+      rating: parseFloat(rating),
       year: new Date().getFullYear(),
       videoId,
     }
@@ -64,10 +64,10 @@ export default function AdminPage() {
     setVideoId('')
     setRating('')
     setDescription('')
-    setCategory('Trending')
+    setCategory('General')
   }
 
-  const deleteCase = async (id: string) => {
+  const deleteCase = async (id: number) => {
     await supabase.from('cases').delete().eq('id', id)
     await fetchCases()
   }
@@ -122,14 +122,15 @@ export default function AdminPage() {
             />
             <select
               value={category}
-              onChange={(e) =>
-                setCategory(e.target.value as 'Trending' | 'Serial Killers' | 'Unsolved')
-              }
+              onChange={(e) => setCategory(e.target.value)}
               className="w-full rounded-md bg-brand-dark text-white px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             >
-              <option value="Trending">Trending</option>
+              <option value="General">General</option>
+              <option value="Trending Now">Trending Now</option>
               <option value="Serial Killers">Serial Killers</option>
               <option value="Unsolved">Unsolved</option>
+              <option value="New Releases">New Releases</option>
+              <option value="Classics">Classics</option>
             </select>
             <input
               value={image}

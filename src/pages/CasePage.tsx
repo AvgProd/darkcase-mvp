@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import type { Case } from '../types'
+import type { Case } from '../types/Case'
 import { supabase } from '../lib/supabase'
 import { ArrowLeft, Play } from 'lucide-react'
 import YouTube from 'react-youtube'
@@ -14,7 +14,8 @@ export default function CasePage() {
   useEffect(() => {
     const fetchItem = async () => {
       if (!id) return
-      const { data, error } = await supabase.from('cases').select('*').eq('id', id).single()
+      const numericId = Number(id)
+      const { data, error } = await supabase.from('cases').select('*').eq('id', numericId).single()
       if (!error && data) {
         setItem(data as Case)
       } else {

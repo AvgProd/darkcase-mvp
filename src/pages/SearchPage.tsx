@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Search as SearchIcon, Frown } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import type { Case } from '../types'
+import type { Case } from '../types/Case'
 
 export default function SearchPage() {
   const [query, setQuery] = useState('')

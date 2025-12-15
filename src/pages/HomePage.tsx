@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import HeroSection from '../components/ui/HeroSection'
 import CaseRow from '../components/ui/CaseRow'
-import type { Case } from '../types'
+import type { Case, GroupedCases } from '../types/Case'
 import { supabase } from '../lib/supabase'
 
 export default function HomePage() {
@@ -24,9 +24,15 @@ export default function HomePage() {
     }
   }, [])
 
-  const trending = cases.filter((c) => c.category === 'Trending')
-  const killers = cases.filter((c) => c.category === 'Serial Killers')
-  const unsolved = cases.filter((c) => c.category === 'Unsolved')
+  const groupByCategory = (items: Case[]): GroupedCases => {
+    return items.reduce((acc: GroupedCases, cur) => {
+      const key = cur.category || 'General'
+      if (!acc[key]) acc[key] = []
+      acc[key].push(cur)
+      return acc
+    }, {})
+  }
+  const grouped = groupByCategory(cases)
 
   return (
     <div className="bg-brand-black text-white pb-24">
@@ -37,13 +43,10 @@ export default function HomePage() {
       )}
       {!loading && cases[0] && <HeroSection featuredCase={cases[0]} />}
       <div className="mt-4">
-        {!loading && (
-          <>
-            <CaseRow title="Trending Now" cases={trending} />
-            <CaseRow title="Serial Killers" cases={killers} />
-            <CaseRow title="Unsolved Mysteries" cases={unsolved} />
-          </>
-        )}
+        {!loading &&
+          Object.keys(grouped).map((category) => (
+            <CaseRow key={category} title={category} cases={grouped[category]} />
+          ))}
       </div>
     </div>
   )

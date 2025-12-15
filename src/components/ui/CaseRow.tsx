@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Case } from '../../types'
+import type { Case } from '../../types/Case'
 import { Link } from 'react-router-dom'
 
 type Props = {

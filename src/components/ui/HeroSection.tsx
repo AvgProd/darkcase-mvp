@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Case } from '../../types'
+import type { Case } from '../../types/Case'
 import { Play, Info } from 'lucide-react'
 import clsx from 'clsx'
 import { Link } from 'react-router-dom'
