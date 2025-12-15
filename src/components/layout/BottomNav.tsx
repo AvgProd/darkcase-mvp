@@ -4,44 +4,49 @@ import { Home, Film, Search, User } from 'lucide-react'
 import clsx from 'clsx'
 
 export default function BottomNav() {
-  const baseItem = 'flex flex-col items-center justify-center gap-1 py-2'
+  const itemBase = 'flex flex-col items-center justify-center gap-1'
   const iconBase = 'w-6 h-6'
+  const labelBase = 'text-xs'
 
   return (
-    <nav className="fixed bottom-0 w-full bg-brand-dark border-t border-white/10">
-      <div className="mx-auto max-w-md grid grid-cols-4">
+    <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[400px] rounded-2xl bg-[#141414]/90 backdrop-blur-md border border-white/10 shadow-2xl shadow-black/50">
+      <div className="flex justify-around items-center py-3">
         <NavLink
           to="/"
           end
           className={({ isActive }) =>
-            clsx(baseItem, isActive ? 'text-brand-red' : 'text-gray-500')
+            clsx(itemBase, isActive ? 'text-brand-red' : 'text-gray-500')
           }
         >
-          <Home className={clsx(iconBase)} />
+          <Home className={iconBase} />
+          <span className={labelBase}>Home</span>
         </NavLink>
         <NavLink
           to="/shorts"
           className={({ isActive }) =>
-            clsx(baseItem, isActive ? 'text-brand-red' : 'text-gray-500')
+            clsx(itemBase, isActive ? 'text-brand-red' : 'text-gray-500')
           }
         >
-          <Film className={clsx(iconBase)} />
+          <Film className={iconBase} />
+          <span className={labelBase}>Shorts</span>
         </NavLink>
         <NavLink
           to="/search"
           className={({ isActive }) =>
-            clsx(baseItem, isActive ? 'text-brand-red' : 'text-gray-500')
+            clsx(itemBase, isActive ? 'text-brand-red' : 'text-gray-500')
           }
         >
-          <Search className={clsx(iconBase)} />
+          <Search className={iconBase} />
+          <span className={labelBase}>Search</span>
         </NavLink>
         <NavLink
           to="/profile"
           className={({ isActive }) =>
-            clsx(baseItem, isActive ? 'text-brand-red' : 'text-gray-500')
+            clsx(itemBase, isActive ? 'text-brand-red' : 'text-gray-500')
           }
         >
-          <User className={clsx(iconBase)} />
+          <User className={iconBase} />
+          <span className={labelBase}>Profile</span>
         </NavLink>
       </div>
     </nav>
