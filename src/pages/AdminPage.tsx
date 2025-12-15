@@ -249,14 +249,14 @@ export default function AdminPage() {
       }
       const { error: dbError } = await supabase.from('cases').delete().eq('id', Number(caseId))
       if (dbError) {
-        setErrorMsg('Ошибка при удалении дела.')
+        setErrorMsg(t.admin.delete_error)
         return
       }
-      setSuccessMsg('Дело успешно удалено.')
+      setSuccessMsg(t.admin.delete_success)
       await fetchCases()
     } catch (e) {
       console.error('Delete case error:', e)
-      setErrorMsg('Не удалось удалить дело. Попробуйте снова.')
+      setErrorMsg(t.admin.delete_error)
     }
   }
 
@@ -456,6 +456,7 @@ export default function AdminPage() {
                   title={t.common.delete}
                 >
                   <Trash className="w-4 h-4" />
+                  <span>{t.common.delete}</span>
                 </button>
                 </div>
               </div>
