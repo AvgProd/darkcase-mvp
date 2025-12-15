@@ -27,9 +27,9 @@ export default function CatalogManager() {
   const [submitLoading, setSubmitLoading] = useState(false)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
-  const [cases, setCases] = useState<Case[]>([])
+  const [items, setItems] = useState<Case[]>([])
   const [editingId, setEditingId] = useState<string | number | null>(null)
-  const [catalogForm, setCatalogForm] = useState<CatalogForm>({
+  const [form, setForm] = useState<CatalogForm>({
     title: '',
     category: '',
     image: '',
@@ -49,34 +49,35 @@ export default function CatalogManager() {
 
   const disabled = useMemo(
     () =>
-      !catalogForm.title ||
-      !catalogForm.rating ||
-      !catalogForm.year ||
-      !catalogForm.description ||
-      !catalogForm.category,
-    [catalogForm]
+      !form.title ||
+      !form.rating ||
+      !form.year ||
+      !form.description ||
+      !form.category,
+    [form]
   )
 
-  const fetchCases = async () => {
+  const fetchItems = async () => {
     setLoading(true)
     const { data, error } = await supabase.from('cases').select('*')
     const list = !error && data ? (data as Case[]) : []
-    setCases(list.filter((c) => !c.is_short))
+    setItems(list.filter((c) => !c.is_short))
     setLoading(false)
   }
 
   useEffect(() => {
-    fetchCases()
+    fetchItems()
   }, [])
 
+  const toDataURL = (f: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(String(reader.result))
+      reader.onerror = reject
+      reader.readAsDataURL(f)
+    })
+
   const compressImage = async (file: File, maxHeight = 1280, maxWidth = 720, targetSize = 250 * 1024) => {
-    const toDataURL = (f: File) =>
-      new Promise<string>((resolve, reject) => {
-        const reader = new FileReader()
-        reader.onload = () => resolve(String(reader.result))
-        reader.onerror = reject
-        reader.readAsDataURL(f)
-      })
     const src = await toDataURL(file)
     const img = new Image()
     await new Promise<void>((res, rej) => {
@@ -169,7 +170,7 @@ export default function CatalogManager() {
     setSuccessMsg(null)
     setSubmitLoading(true)
     try {
-      let imageUrl = catalogForm.image?.trim() || ''
+      let imageUrl = form.image?.trim() || ''
       if (imageFile) {
         try {
           imageUrl = await uploadImage(imageFile)
@@ -179,12 +180,12 @@ export default function CatalogManager() {
         }
       }
       const payload: Omit<Case, 'id'> = {
-        title: catalogForm.title,
-        description: catalogForm.description,
+        title: form.title,
+        description: form.description,
         image: imageUrl || null,
-        category: catalogForm.category?.trim() || 'General',
-        rating: parseFloat(catalogForm.rating),
-        year: parseInt(catalogForm.year, 10),
+        category: form.category?.trim() || 'General',
+        rating: parseFloat(form.rating),
+        year: parseInt(form.year, 10),
         is_short: false,
         video_url: null,
         short_description: null,
@@ -193,8 +194,8 @@ export default function CatalogManager() {
       if (error) {
         setErrorMsg(t.admin.save_error)
       } else {
-        await fetchCases()
-        setCatalogForm({
+        await fetchItems()
+        setForm({
           title: '',
           category: '',
           image: '',
@@ -254,7 +255,7 @@ export default function CatalogManager() {
       short_description: null,
     }
     await supabase.from('cases').update(payload).match({ id: Number(editingId) })
-    await fetchCases()
+    await fetchItems()
     setEditingId(null)
     setEditForm({
       title: '',
@@ -268,7 +269,7 @@ export default function CatalogManager() {
     setSubmitLoading(false)
   }
 
-  const handleDeleteCase = async (c: Case) => {
+  const handleDelete = async (c: Case) => {
     const ok = window.confirm('Вы уверены, что хотите удалить это дело?')
     if (!ok) return
     setErrorMsg(null)
@@ -286,7 +287,7 @@ export default function CatalogManager() {
         return
       }
       setSuccessMsg(t.admin.delete_success)
-      await fetchCases()
+      await fetchItems()
     } catch {
       setErrorMsg(t.admin.delete_error)
     }
@@ -302,15 +303,15 @@ export default function CatalogManager() {
           {!editingId ? (
             <>
               <input
-                value={catalogForm.title}
-                onChange={(e) => setCatalogForm({ ...catalogForm, title: e.target.value })}
+                value={form.title}
+                onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder={t.admin.field_title}
                 className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
               />
               <input
                 type="text"
-                value={catalogForm.category}
-                onChange={(e) => setCatalogForm({ ...catalogForm, category: e.target.value })}
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
                 placeholder={t.admin.field_category}
                 className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
               />
@@ -347,8 +348,8 @@ export default function CatalogManager() {
           {!editingId ? (
             <>
               <input
-                value={catalogForm.rating}
-                onChange={(e) => setCatalogForm({ ...catalogForm, rating: e.target.value })}
+                value={form.rating}
+                onChange={(e) => setForm({ ...form, rating: e.target.value })}
                 type="number"
                 step="0.1"
                 inputMode="decimal"
@@ -356,16 +357,16 @@ export default function CatalogManager() {
                 className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
               />
               <input
-                value={catalogForm.year}
-                onChange={(e) => setCatalogForm({ ...catalogForm, year: e.target.value })}
+                value={form.year}
+                onChange={(e) => setForm({ ...form, year: e.target.value })}
                 type="number"
                 inputMode="numeric"
                 placeholder={t.admin.field_year}
                 className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
               />
               <textarea
-                value={catalogForm.description}
-                onChange={(e) => setCatalogForm({ ...catalogForm, description: e.target.value })}
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder={t.admin.field_description}
                 rows={4}
                 className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
@@ -461,7 +462,7 @@ export default function CatalogManager() {
         <h3 className="text-lg font-semibold">{t.admin.manage_cases}</h3>
         <div className="mt-4 space-y-3">
           {loading && <p className="text-sm text-gray-400">{t.common.loading}</p>}
-          {!loading && cases.map((c) => (
+          {!loading && items.map((c) => (
             <div
               key={c.id}
               className="flex items-center justify-between gap-3 rounded-md bg-brand-dark px-3 py-2 border border-white/10"
@@ -490,7 +491,7 @@ export default function CatalogManager() {
                   {t.common.edit}
                 </button>
                 <button
-                  onClick={() => handleDeleteCase(c)}
+                  onClick={() => handleDelete(c)}
                   className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-red text-white hover:bg-brand-red/90 transition"
                   title={t.common.delete}
                 >

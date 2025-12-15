@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
 import { useT } from '../hooks/useTranslation'
 import CatalogManager from './CatalogManager'
-import ShortsManager from './ShortsManager'
 
 export default function AdminPage() {
   const t = useT()
@@ -76,7 +75,13 @@ export default function AdminPage() {
           </div>
 
           <div className="mt-6">
-            {activeTab === 'catalog' ? <CatalogManager /> : <ShortsManager />}
+            {activeTab === 'catalog' ? (
+              <CatalogManager />
+            ) : (
+              <div className="rounded-xl bg-brand-dark/60 border border-white/10 p-4">
+                <p className="text-sm text-gray-400">Секция в разработке</p>
+              </div>
+            )}
           </div>
         </div>
       </main>
