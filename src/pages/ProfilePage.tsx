@@ -1,4 +1,4 @@
-import React from 'react'
+ 
 import { ChevronRight } from 'lucide-react'
 import { CASES } from '../data/mockData'
 import CaseRow from '../components/ui/CaseRow'

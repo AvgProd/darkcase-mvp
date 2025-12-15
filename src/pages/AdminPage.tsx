@@ -62,7 +62,6 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchCases()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const addCase = async () => {
@@ -89,8 +88,8 @@ export default function AdminPage() {
     })
   }
 
-  const deleteCase = async (id: number) => {
-    await supabase.from('cases').delete().eq('id', id)
+  const deleteCase = async (id: string | number) => {
+    await supabase.from('cases').delete().eq('id', Number(id))
     await fetchCases()
   }
 

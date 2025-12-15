@@ -1,4 +1,3 @@
-import React from 'react'
 import { Heart, Share2 } from 'lucide-react'
 
 type Props = {

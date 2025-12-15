@@ -17,7 +17,9 @@ export default function HomePage() {
       setLoading(false)
     }
     fetchCases()
-    const tg = (window as any).Telegram?.WebApp
+    type TelegramWebAppLite = { ready?: () => void; expand?: () => void }
+    const tg =
+      (window as unknown as { Telegram?: { WebApp?: TelegramWebAppLite } }).Telegram?.WebApp
     if (tg) {
       tg.ready?.()
       tg.expand?.()

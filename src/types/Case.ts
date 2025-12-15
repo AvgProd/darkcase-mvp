@@ -1,5 +1,5 @@
 export interface Case {
-  id: number
+  id: string | number
   title: string
   description: string
   image: string

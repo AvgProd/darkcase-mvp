@@ -9,7 +9,7 @@ export const CASES: Case[] = [
     image:
       'https://images.unsplash.com/photo-1542228260-8c5f1a93fc8a?q=80&w=1600&auto=format&fit=crop',
     category: 'Trending',
-    rating: '9.6',
+    rating: 9.6,
     year: 2021,
     videoId: 'M7lc1UVf-VE',
   },
@@ -21,7 +21,7 @@ export const CASES: Case[] = [
     image:
       'https://images.unsplash.com/photo-1498931299472-e8363a6e0fdb?q=80&w=1600&auto=format&fit=crop',
     category: 'Unsolved',
-    rating: '9.2',
+    rating: 9.2,
     year: 2020,
     videoId: 'M7lc1UVf-VE',
   },
@@ -33,7 +33,7 @@ export const CASES: Case[] = [
     image:
       'https://images.unsplash.com/photo-1541639222072-2080a6a93f63?q=80&w=1600&auto=format&fit=crop',
     category: 'Serial Killers',
-    rating: '9.8',
+    rating: 9.8,
     year: 2022,
     videoId: 'M7lc1UVf-VE',
   },
@@ -45,7 +45,7 @@ export const CASES: Case[] = [
     image:
       'https://images.unsplash.com/photo-1470124182916-1b3cecae0c69?q=80&w=1600&auto=format&fit=crop',
     category: 'Trending',
-    rating: '9.0',
+    rating: 9.0,
     year: 2023,
     videoId: 'M7lc1UVf-VE',
   },
@@ -57,7 +57,7 @@ export const CASES: Case[] = [
     image:
       'https://images.unsplash.com/photo-1481627834876-b7833e8f5570?q=80&w=1600&auto=format&fit=crop',
     category: 'Unsolved',
-    rating: '8.9',
+    rating: 8.9,
     year: 2019,
     videoId: 'M7lc1UVf-VE',
   },
@@ -69,7 +69,7 @@ export const CASES: Case[] = [
     image:
       'https://images.unsplash.com/photo-1513267048331-5611cad62e3a?q=80&w=1600&auto=format&fit=crop',
     category: 'Serial Killers',
-    rating: '9.4',
+    rating: 9.4,
     year: 2024,
     videoId: 'M7lc1UVf-VE',
   },
@@ -81,7 +81,7 @@ export const CASES: Case[] = [
     image:
       'https://images.unsplash.com/photo-1499898079530-43f56fcb08a9?q=80&w=1600&auto=format&fit=crop',
     category: 'Trending',
-    rating: '9.1',
+    rating: 9.1,
     year: 2024,
     videoId: 'M7lc1UVf-VE',
   },
@@ -93,7 +93,7 @@ export const CASES: Case[] = [
     image:
       'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop',
     category: 'Unsolved',
-    rating: '9.3',
+    rating: 9.3,
     year: 2023,
     videoId: 'M7lc1UVf-VE',
   },
