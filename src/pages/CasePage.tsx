@@ -91,7 +91,7 @@ export default function CasePage() {
         <h1 className="text-2xl md:text-3xl font-bold">{item.title}</h1>
         <div className="mt-2 text-sm text-gray-300">
           <span>{item.year}</span> • <span>{item.category}</span> •{' '}
-          <span className="text-green-400">{item.rating}</span>
+          <span className="text-yellow-300 font-medium">{item.rating} ⭐</span>
         </div>
         {!isPlaying && (
           <button

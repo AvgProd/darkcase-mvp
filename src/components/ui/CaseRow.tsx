@@ -24,6 +24,9 @@ export default function CaseRow({ title, cases }: Props) {
                 alt={c.title}
                 className="w-full h-48 md:h-56 object-cover"
               />
+              <div className="absolute top-1 left-1 rounded px-2 py-0.5 bg-black/60 text-white/80 text-[11px]">
+                {c.year}
+              </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition" />
               <div className="absolute bottom-0 left-0 right-0 p-2">
                 <p className="text-xs text-white font-medium truncate">

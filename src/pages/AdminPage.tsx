@@ -14,11 +14,12 @@ export default function AdminPage() {
   const [image, setImage] = useState('')
   const [videoId, setVideoId] = useState('')
   const [rating, setRating] = useState('')
+  const [year, setYear] = useState('')
   const [description, setDescription] = useState('')
 
   const disabled = useMemo(
-    () => !title || !image || !videoId || !rating || !description,
-    [title, image, videoId, rating, description]
+    () => !title || !image || !videoId || !rating || !year || !description,
+    [title, image, videoId, rating, year, description]
   )
 
   const handleLogin = () => {
@@ -54,7 +55,7 @@ export default function AdminPage() {
       image,
       category: category?.trim() || 'General',
       rating: parseFloat(rating),
-      year: new Date().getFullYear(),
+      year: parseInt(year, 10),
       videoId,
     }
     await supabase.from('cases').insert([payload])
@@ -63,6 +64,7 @@ export default function AdminPage() {
     setImage('')
     setVideoId('')
     setRating('')
+    setYear('')
     setDescription('')
     setCategory('General')
   }
@@ -147,7 +149,18 @@ export default function AdminPage() {
             <input
               value={rating}
               onChange={(e) => setRating(e.target.value)}
+              type="number"
+              step="0.1"
+              inputMode="decimal"
               placeholder="Rating (e.g., 9.8)"
+              className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
+            />
+            <input
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              type="number"
+              inputMode="numeric"
+              placeholder="Year (e.g., 2024)"
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <textarea
