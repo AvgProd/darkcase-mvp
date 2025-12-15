@@ -2,8 +2,10 @@ import React from 'react'
 import { NavLink } from 'react-router-dom'
 import { Home, Film, Search, User } from 'lucide-react'
 import clsx from 'clsx'
+import { useT } from '../../hooks/useTranslation'
 
 export default function BottomNav() {
+  const t = useT()
   const itemBase = 'flex flex-col items-center justify-center gap-1'
   const iconBase = 'w-6 h-6'
   const labelBase = 'text-xs'
@@ -19,7 +21,7 @@ export default function BottomNav() {
           }
         >
           <Home className={iconBase} />
-          <span className={labelBase}>Home</span>
+          <span className={labelBase}>{t.nav.home}</span>
         </NavLink>
         <NavLink
           to="/shorts"
@@ -28,7 +30,7 @@ export default function BottomNav() {
           }
         >
           <Film className={iconBase} />
-          <span className={labelBase}>Shorts</span>
+          <span className={labelBase}>{t.nav.shorts}</span>
         </NavLink>
         <NavLink
           to="/search"
@@ -37,7 +39,7 @@ export default function BottomNav() {
           }
         >
           <Search className={iconBase} />
-          <span className={labelBase}>Search</span>
+          <span className={labelBase}>{t.nav.search}</span>
         </NavLink>
         <NavLink
           to="/profile"
@@ -46,7 +48,7 @@ export default function BottomNav() {
           }
         >
           <User className={iconBase} />
-          <span className={labelBase}>Profile</span>
+          <span className={labelBase}>{t.nav.profile}</span>
         </NavLink>
       </div>
     </nav>

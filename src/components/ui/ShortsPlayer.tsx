@@ -1,4 +1,5 @@
 import { Heart, Share2 } from 'lucide-react'
+import { useT } from '../../hooks/useTranslation'
 
 type Props = {
   title: string
@@ -6,6 +7,7 @@ type Props = {
 }
 
 export default function ShortsPlayer({ title, videoUrl }: Props) {
+  const t = useT()
   return (
     <div className="h-screen w-full relative snap-start bg-black">
       <div className="absolute inset-0">
@@ -22,7 +24,7 @@ export default function ShortsPlayer({ title, videoUrl }: Props) {
 
       <div className="absolute bottom-6 left-4">
         <h4 className="text-lg font-semibold">{title}</h4>
-        <p className="text-sm text-gray-300">@DarkCase</p>
+        <p className="text-sm text-gray-300">{t.shorts.author}</p>
       </div>
 
       <div className="absolute bottom-6 right-4 flex flex-col items-center gap-4">

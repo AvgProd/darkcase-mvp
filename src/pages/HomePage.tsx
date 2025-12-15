@@ -3,8 +3,10 @@ import HeroSection from '../components/ui/HeroSection'
 import CaseRow from '../components/ui/CaseRow'
 import type { Case, GroupedCases } from '../types/Case'
 import { supabase } from '../lib/supabase'
+import { useT } from '../hooks/useTranslation'
 
 export default function HomePage() {
+  const t = useT()
   const [cases, setCases] = useState<Case[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -40,7 +42,7 @@ export default function HomePage() {
     <div className="bg-brand-black text-white pb-24">
       {loading && (
         <div className="h-[50vh] flex items-center justify-center">
-          <p className="text-gray-400">Loading...</p>
+          <p className="text-gray-400">{t.common.loading}</p>
         </div>
       )}
       {!loading && cases[0] && <HeroSection featuredCase={cases[0]} />}

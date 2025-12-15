@@ -3,12 +3,14 @@ import type { Case } from '../../types/Case'
 import { Play, Info } from 'lucide-react'
 import clsx from 'clsx'
 import { Link } from 'react-router-dom'
+import { useT } from '../../hooks/useTranslation'
 
 type Props = {
   featuredCase: Case
 }
 
 export default function HeroSection({ featuredCase }: Props) {
+  const t = useT()
   return (
     <section className="relative w-full h-[70vh] bg-black">
       <Link to={`/case/${featuredCase.id}`}>
@@ -35,11 +37,11 @@ export default function HeroSection({ featuredCase }: Props) {
               className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-brand-red text-white font-semibold hover:bg-brand-red/90 transition"
             >
               <Play className="w-4 h-4" />
-              Play Now
+              {t.common.play_now}
             </Link>
             <button className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-gray-700 text-white font-semibold hover:bg-gray-600 transition">
               <Info className="w-4 h-4" />
-              More Info
+              {t.common.more_info}
             </button>
           </div>
         </div>

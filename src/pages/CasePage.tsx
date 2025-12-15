@@ -4,8 +4,10 @@ import type { Case } from '../types/Case'
 import { supabase } from '../lib/supabase'
 import { ArrowLeft, Play } from 'lucide-react'
 import YouTube from 'react-youtube'
+import { useT } from '../hooks/useTranslation'
 
 export default function CasePage() {
+  const t = useT()
   const { id } = useParams()
   const [item, setItem] = useState<Case | null>(null)
   const [loading, setLoading] = useState(true)
@@ -29,7 +31,7 @@ export default function CasePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-brand-black text-white flex items-center justify-center">
-        <p className="text-lg text-gray-400">Loading...</p>
+        <p className="text-lg text-gray-400">{t.common.loading}</p>
       </div>
     )
   }
@@ -37,7 +39,7 @@ export default function CasePage() {
   if (!item) {
     return (
       <div className="min-h-screen bg-brand-black text-white flex items-center justify-center">
-        <p className="text-lg">Case not found</p>
+        <p className="text-lg">{t.case.case_not_found}</p>
       </div>
     )
   }
@@ -49,7 +51,7 @@ export default function CasePage() {
         className="absolute top-4 left-4 inline-flex items-center gap-2 px-3 py-2 rounded-md bg-black/60 border border-white/10 hover:bg-black/80 transition"
       >
         <ArrowLeft className="w-4 h-4" />
-        Back
+        {t.common.back}
       </Link>
 
       <div className="w-full">
@@ -99,7 +101,7 @@ export default function CasePage() {
             className="mt-4 w-full md:w-auto inline-flex items-center gap-2 px-4 py-2 rounded-md bg-brand-red text-white font-semibold hover:bg-brand-red/90 transition"
           >
             <Play className="w-4 h-4" />
-            Play
+            {t.case.play}
           </button>
         )}
         <p className="mt-4 text-gray-400">{item.description}</p>

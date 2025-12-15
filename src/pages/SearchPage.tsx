@@ -3,8 +3,10 @@ import { Search as SearchIcon, Frown } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { Case } from '../types/Case'
+import { useT } from '../hooks/useTranslation'
 
 export default function SearchPage() {
+  const t = useT()
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Case[]>([])
  
@@ -40,7 +42,7 @@ export default function SearchPage() {
               setQuery(v)
               handleSearch(v)
             }}
-            placeholder="Search cases, detectives..."
+            placeholder={t.search.placeholder}
             className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 pl-10 pr-3 py-2 outline-none border border-white/10 focus:border-white/20"
           />
         </div>
@@ -48,9 +50,9 @@ export default function SearchPage() {
 
       {showTop && (
         <div className="px-4 py-4">
-          <h3 className="text-sm text-gray-400">Top Genres</h3>
+          <h3 className="text-sm text-gray-400">{t.search.top_genres}</h3>
           <div className="mt-3 flex flex-wrap gap-2">
-            {['Trending', 'Serial Killers', 'Unsolved', 'New Releases', 'Forensic'].map((g) => (
+            {t.search.genres.map((g) => (
               <span
                 key={g}
                 className="inline-flex items-center px-3 py-1 rounded-full bg-brand-dark text-gray-200 text-xs border border-white/10"
@@ -87,7 +89,7 @@ export default function SearchPage() {
         <div className="w-full flex items-center justify-center py-24">
           <div className="flex items-center gap-3 text-gray-400">
             <Frown className="w-6 h-6" />
-            <span>Ничего не найдено.</span>
+            <span>{t.common.not_found}</span>
           </div>
         </div>
       )}

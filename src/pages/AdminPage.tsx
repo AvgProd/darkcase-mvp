@@ -2,8 +2,10 @@ import React, { useEffect, useMemo, useState } from 'react'
 import type { Case } from '../types/Case'
 import { Trash } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import { useT } from '../hooks/useTranslation'
 
 export default function AdminPage() {
+  const t = useT()
   const [authenticated, setAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
   const [cases, setCases] = useState<Case[]>([])
@@ -97,14 +99,14 @@ export default function AdminPage() {
     return (
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
         <div className="w-full max-w-sm rounded-xl bg-brand-dark/80 border border-white/10 p-6">
-          <h1 className="text-xl font-bold text-center">Admin Login</h1>
-          <p className="mt-1 text-center text-gray-400">Restricted Area</p>
+          <h1 className="text-xl font-bold text-center">{t.admin.admin_login}</h1>
+          <p className="mt-1 text-center text-gray-400">{t.admin.restricted_area}</p>
           <div className="mt-4">
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
+              placeholder={t.admin.enter_password}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
           </div>
@@ -112,7 +114,7 @@ export default function AdminPage() {
             onClick={handleLogin}
             className="mt-4 w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition"
           >
-            Unlock Dashboard
+            {t.admin.unlock_dashboard}
           </button>
         </div>
       </div>
@@ -122,42 +124,42 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-black text-white">
       <header className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-white/10">
-        <h2 className="text-2xl font-bold text-brand-red">DarkCase HQ</h2>
+        <h2 className="text-2xl font-bold text-brand-red">{t.admin.hq_title}</h2>
         <button
           onClick={handleLogout}
           className="rounded-md px-3 py-2 bg-brand-dark border border-white/10 hover:bg-brand-dark/80 transition"
         >
-          Logout
+          {t.common.logout}
         </button>
       </header>
 
       <main className="px-4 md:px-8 py-6 grid grid-cols-1 md:grid-cols-2 gap-6">
         <section className="rounded-xl bg-brand-dark/60 border border-white/10 p-4">
-          <h3 className="text-lg font-semibold">Add Case</h3>
+          <h3 className="text-lg font-semibold">{t.admin.add_case}</h3>
           <div className="mt-4 space-y-3">
             <input
               value={newCase.title}
               onChange={(e) => setNewCase({ ...newCase, title: e.target.value })}
-              placeholder="Title"
+              placeholder={t.admin.field_title}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <input
               type="text"
               value={newCase.category}
               onChange={(e) => setNewCase({ ...newCase, category: e.target.value })}
-              placeholder="Category (e.g., Sci-Fi, Trending, 2025)"
+              placeholder={t.admin.field_category_placeholder}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <input
               value={newCase.image}
               onChange={(e) => setNewCase({ ...newCase, image: e.target.value })}
-              placeholder="Image URL"
+              placeholder={t.admin.field_image_url}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <input
               value={newCase.videoId}
               onChange={(e) => setNewCase({ ...newCase, videoId: e.target.value })}
-              placeholder="YouTube Video ID"
+              placeholder={t.admin.field_video_id}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <input
@@ -166,7 +168,7 @@ export default function AdminPage() {
               type="number"
               step="0.1"
               inputMode="decimal"
-              placeholder="Rating (e.g., 9.8)"
+              placeholder={t.admin.field_rating_placeholder}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <input
@@ -174,13 +176,13 @@ export default function AdminPage() {
               onChange={(e) => setNewCase({ ...newCase, year: e.target.value })}
               type="number"
               inputMode="numeric"
-              placeholder="Year (e.g., 2024)"
+              placeholder={t.admin.field_year_placeholder}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
             <textarea
               value={newCase.description}
               onChange={(e) => setNewCase({ ...newCase, description: e.target.value })}
-              placeholder="Description"
+              placeholder={t.admin.field_description}
               rows={4}
               className="w-full rounded-md bg-brand-dark text-white placeholder-gray-400 px-3 py-2 outline-none border border-white/10 focus:border-white/20"
             />
@@ -189,15 +191,15 @@ export default function AdminPage() {
               onClick={addCase}
               className="w-full rounded-md bg-brand-red text-white font-semibold py-2 hover:bg-brand-red/90 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              ADD CASE
+              {t.admin.add_case_cta}
             </button>
           </div>
         </section>
 
         <section className="rounded-xl bg-brand-dark/60 border border-white/10 p-4">
-          <h3 className="text-lg font-semibold">Manage Cases</h3>
+          <h3 className="text-lg font-semibold">{t.admin.manage_cases}</h3>
           <div className="mt-4 space-y-3">
-            {loading && <p className="text-sm text-gray-400">Loading...</p>}
+            {loading && <p className="text-sm text-gray-400">{t.common.loading}</p>}
             {!loading && cases.map((c) => (
               <div
                 key={c.id}
@@ -217,7 +219,7 @@ export default function AdminPage() {
                 <button
                   onClick={() => deleteCase(c.id)}
                   className="inline-flex items-center gap-2 rounded-md px-2 py-2 bg-brand-red text-white hover:bg-brand-red/90 transition"
-                  title="Delete"
+                  title={t.common.delete}
                 >
                   <Trash className="w-4 h-4" />
                 </button>
