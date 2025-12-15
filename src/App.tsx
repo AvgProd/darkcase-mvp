@@ -6,7 +6,7 @@ import ShortsPage from './pages/ShortsPage'
 import CatalogPage from './pages/CatalogPage'
 import ProfilePage from './pages/ProfilePage'
 import CasePage from './pages/CasePage'
-import AdminPage from './pages/AdminPage'
+import AdminPage from './pages/AdminPage.tsx'
 import { TelegramInitializer } from './components/TelegramInitializer'
 import MyContentPage from './pages/MyContentPage'
 

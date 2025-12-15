@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useT } from '../hooks/useTranslation'
-import CatalogManager from './CatalogManager'
+import CatalogManager from './CatalogManager.tsx'
 
 export default function AdminPage() {
   const t = useT()
