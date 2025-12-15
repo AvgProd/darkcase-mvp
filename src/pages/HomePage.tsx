@@ -17,6 +17,11 @@ export default function HomePage() {
       setLoading(false)
     }
     fetchCases()
+    const tg = (window as any).Telegram?.WebApp
+    if (tg) {
+      tg.ready?.()
+      tg.expand?.()
+    }
   }, [])
 
   const trending = cases.filter((c) => c.category === 'Trending')
